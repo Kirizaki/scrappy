@@ -49,6 +49,18 @@
 
 3.  Click **"HUNT OFFERS"** to start scraping.
 
+## Cloudflare Tunnel
+
+1.  Install Cloudflare Tunnel:
+    ```bash
+    brew install cloudflared
+    ```
+
+2.  Start the tunnel:
+    ```bash
+    cloudflared tunnel --url http://localhost:8000 --protocol http2
+    ```
+
 ## Configuration
 
 You can configure the scraper directly from the Web UI (Settings button) or by editing `config.json`.
