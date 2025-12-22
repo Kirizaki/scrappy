@@ -188,6 +188,71 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.25rem rgba(0, 105, 148, 0.25);
         }
+
+        /* Pagination & Info */
+        .page-item.active .page-link {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        .page-link {
+            color: var(--primary-color);
+            background-color: white;
+            border: 1px solid #dee2e6;
+            margin: 0 2px;
+            border-radius: 6px;
+        }
+
+        .page-link:hover {
+            color: var(--secondary-color);
+            background-color: #f8f9fa;
+        }
+
+        .dataTables_info {
+            font-weight: 700;
+            color: var(--primary-color);
+            padding-top: 0 !important;
+        }
+
+        /* Search Bar styling */
+        .dataTables_filter {
+            text-align: left !important;
+        }
+
+        .dataTables_filter label {
+            width: 100%;
+            position: relative;
+        }
+
+        .dataTables_filter input {
+            width: 100% !important;
+            margin-left: 0 !important;
+            border-radius: 20px;
+            padding: 8px 15px 8px 40px;
+            /* Space for icon */
+            border: 1px solid #dee2e6;
+            transition: all 0.2s;
+        }
+
+        .dataTables_filter input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 127, 80, 0.25);
+            outline: none;
+        }
+
+        /* Search Icon pseudo-element */
+        .dataTables_filter label::before {
+            content: "\F52A";
+            /* Bootstrap Icons 'search' */
+            font-family: "bootstrap-icons";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -230,6 +295,9 @@
                             <th>Area (m²)</th>
                             <th>Price</th>
                             <th>Price/m²</th>
+                            <th class="text-center">Floor</th>
+                            <th class="text-center">Garden</th>
+                            <th>Scraped Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -329,7 +397,17 @@
                     },
                     language: {
                         search: "_INPUT_",
-                        searchPlaceholder: "Search offers..."
+                        searchPlaceholder: "Search offers...",
+                        info: '<i class="bi bi-collection me-2"></i>Showing _START_ to _END_ of _TOTAL_ offers',
+                        infoEmpty: "No offers found",
+                        infoFiltered: "(filtered from _MAX_ total offers)",
+                        lengthMenu: "Show _MENU_ offers",
+                        paginate: {
+                            first: '<i class="bi bi-chevron-double-left"></i>',
+                            last: '<i class="bi bi-chevron-double-right"></i>',
+                            next: 'Next',
+                            previous: 'Previous'
+                        }
                     },
                     columns: [
                         {
@@ -362,6 +440,31 @@
                             className: 'text-muted small align-middle'
                         },
                         {
+                            data: 'floor',
+                            render: function (data) {
+                                if (data === 0) return '<span class="badge bg-success">Ground</span>';
+                                if (data === null || data === undefined) return '<span class="text-muted">-</span>';
+                                return '<span class="badge bg-secondary">' + data + '</span>';
+                            },
+                            className: 'text-center align-middle'
+                        },
+                        {
+                            data: 'garden',
+                            render: function (data) {
+                                return data ? '<i class="bi bi-tree-fill text-success h5"></i>' : '<span class="text-muted small">-</span>';
+                            },
+                            className: 'text-center align-middle'
+                        },
+                        {
+                            data: 'scraped_at',
+                            render: function (data) {
+                                if (!data) return '-';
+                                var date = new Date(data);
+                                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            },
+                            className: 'text-muted small text-center align-middle'
+                        },
+                        {
                             data: null,
                             render: function (data, type, row) {
                                 return '<button class="btn btn-outline-danger btn-sm hide-offer rounded-circle" title="Hide Offer"><i class="bi bi-eye-slash-fill"></i></button>';
@@ -371,13 +474,16 @@
                         }
                     ],
                     order: [[1, 'asc']],
-                    dom: '<"p-3"ft>p', // Custom cleaner DOM layout for DataTables
+                    pagingType: 'simple_numbers',
+                    dom: '<"row p-3 align-items-center"<"col-md-6"f><"col-md-6 text-end"l>><"row"<"col-12"t>><"row p-3 align-items-center"<"col-md-6"i><"col-md-6"p>>',
                     pageLength: 25
                 });
 
                 // Toggle Favorite
                 $('#offersTable tbody').on('click', '.toggle-fav', function () {
-                    var row = table.row($(this).closest('tr')).data();
+                    var btn = $(this);
+                    var tr = btn.closest('tr');
+                    var row = table.row(tr).data();
                     var newStatus = !row.is_favorite;
 
                     $.ajax({
@@ -387,8 +493,11 @@
                         data: JSON.stringify({ url: row.url, status: newStatus }),
                         success: function () {
                             row.is_favorite = newStatus;
-                            table.row($(this).closest('tr')).data(row).draw(false);
-                            table.ajax.reload(null, false);
+                            // Update the specific row's data and redraw it to update the icon
+                            table.row(tr).data(row).invalidate();
+                            // We don't necessarily need a full ajax reload if local update works,
+                            // but we can keep it for consistency or remove it for speed.
+                            // table.ajax.reload(null, false); 
                         }
                     });
                 });
