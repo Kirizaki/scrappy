@@ -83,11 +83,11 @@ def parse_floor(text):
 
     # Standard Polish format: "1 piętro", "3 p.", "4 p"
     # Limit digits to 1-2 to avoid years (e.g. 2021)
-    m = re.search(r'(\d{1,2})[ \t]*(?:piętro|p\.|p\b)', text_lower)
+    m = re.search(r'(\d{1,2})\s*(?:piętro|p\.|p\b)', text_lower)
     if m: return int(m.group(1))
     
     # Prefix format: "piętro 1", "p. 4"
-    m2 = re.search(r'(?:piętro|p\.|p\b)[ \t]*(\d{1,2})', text_lower)
+    m2 = re.search(r'(?:piętro|p\.|p\b)\s*(\d{1,2})', text_lower)
     if m2: return int(m2.group(1))
     
     # Handle Roman Numerals (Common in Poland: I, II, III, IV)
@@ -265,6 +265,7 @@ async def scrape_otodom(page: Page, url: str, max_pages: int = 0):
             break
             
         print(f"Otodom Page {current_page}")
+        await asyncio.sleep(3) # Wait for dynamic content
     
         try:
             await page.wait_for_selector("article", timeout=10000)
@@ -273,6 +274,7 @@ async def scrape_otodom(page: Page, url: str, max_pages: int = 0):
              break
 
         results = await page.query_selector_all("article")
+        print(f"Found {len(results)} articles on Otodom Page {current_page}")
         page_offers = []
         
         for card in results:
@@ -310,13 +312,11 @@ async def scrape_otodom(page: Page, url: str, max_pages: int = 0):
                 
                 # Price strategy: Try specific data-cy first, then tight regex
                 price_el = await card.query_selector("[data-cy='listing-item-price']")
-                if price_el:
-                    price = safe_text(await price_el.inner_text())
+                price = safe_text(await price_el.inner_text()) if price_el else ""
                 
                 # Area strategy: Try specific data-cy
                 area_el = await card.query_selector("[data-cy='listing-item-area']")
-                if area_el:
-                    area = safe_text(await area_el.inner_text())
+                area = safe_text(await area_el.inner_text()) if area_el else ""
 
                 # If missing, fallback to regex but on restricted text
                 if not price or not area:
@@ -331,32 +331,31 @@ async def scrape_otodom(page: Page, url: str, max_pages: int = 0):
                 
                 # Price/m2
                 pm2_match = re.search(r'(\d+[\s\xa0]?\d+)\s*zł/m²', text_content)
-                if pm2_match: price_m2 = pm2_match.group(1).replace(" ", "").replace("\xa0", "")
+                price_m2 = pm2_match.group(1).replace(" ", "").replace("\xa0", "") if pm2_match else ""
 
                 # Location strategy: Try specific data-cy
                 loc_el = await card.query_selector("[data-cy='listing-item-location']")
-                if loc_el:
-                    location = safe_text(await loc_el.inner_text())
+                location = safe_text(await loc_el.inner_text()) if loc_el else "N/A"
                 
                 if location == "N/A":
                     # Fallback strategy: Look for "Gdańsk" or similar in text
-                    # We can iterate over common cities in config or just greedy grab
-                    # "Gdańsk, Wrzeszcz" pattern 
-                    # Let's look for known city names in the text
                     known_cities = ["Gdańsk", "Gdynia", "Sopot", "Rumia", "Reda", "Wejherowo"]
                     found_loc = None
                     for city in known_cities:
                         if city in text_content:
-                            # Try to extract the context?
-                            # Regex: (City, [Word]+)
                             loc_m = re.search(fr'({city}[^0-9\n\r]*)', text_content)
                             if loc_m:
                                 found_loc = loc_m.group(1).strip().strip(",-")
                                 break
-                    if found_loc:
-                        location = found_loc
+                    if found_loc: location = found_loc
                 
-                floor = parse_floor(text_content)
+                # Floor strategy: Try specific data-cy
+                floor_el = await card.query_selector("[data-cy='listing-item-floor']")
+                if floor_el:
+                    floor = parse_floor(safe_text(await floor_el.inner_text()))
+                else:
+                    floor = parse_floor(text_content)
+                
                 garden = check_garden(text_content)
 
                 page_offers.append({

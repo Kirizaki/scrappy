@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 CSV_FILE = "offers.csv"
-COLUMNS = ["no", "url", "title", "price", "area", "price_per_m2", "location", "floor", "garden", "scraped_at", "is_favorite", "is_hidden"]
+COLUMNS = ["no", "url", "title", "price", "area", "price_per_m2", "location", "floor", "garden", "source", "scraped_at", "is_favorite", "is_hidden"]
 
 def load_offers():
     if not os.path.exists(CSV_FILE):
