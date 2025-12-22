@@ -1,6 +1,6 @@
 {
     "filters": {
-        "min_area": 60,
+        "min_area": 65,
         "max_price": null,
         "district": [
             "Wrzeszcz",
@@ -9,8 +9,8 @@
             "Anio\u0142ki",
             "Strzy\u017ca"
         ],
-        "ground_floor": true,
-        "garden": true
+        "ground_floor": false,
+        "garden": false
     },
     "portals": {
         "olx": {

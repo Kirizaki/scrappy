@@ -413,7 +413,10 @@
                         {
                             data: 'is_favorite',
                             render: function (data, type, row) {
-                                return data ? '<i class="bi bi-heart-fill favorite h4"></i>' : '<i class="bi bi-heart h4 text-muted"></i>';
+                                if (type === 'display') {
+                                    return data ? '<i class="bi bi-heart-fill favorite h4"></i>' : '<i class="bi bi-heart h4 text-muted"></i>';
+                                }
+                                return data;
                             },
                             className: 'text-center action-btn toggle-fav align-middle',
                             width: "60px"
@@ -421,8 +424,11 @@
                         {
                             data: 'title',
                             render: function (data, type, row) {
-                                return `<div class="fw-bold"><a href="${row.url}" target="_blank" class="offer-link">${data || '-'}</a></div>
-                                        <div class="small text-muted"><i class="bi bi-geo-alt-fill me-1"></i>${row.location || '-'}</div>`;
+                                if (type === 'display') {
+                                    return `<div class="fw-bold"><a href="${row.url}" target="_blank" class="offer-link">${data || '-'}</a></div>
+                                            <div class="small text-muted"><i class="bi bi-geo-alt-fill me-1"></i>${row.location || '-'}</div>`;
+                                }
+                                return data;
                             }
                         },
                         {
@@ -441,17 +447,23 @@
                         },
                         {
                             data: 'floor',
-                            render: function (data) {
-                                if (data === 0) return '<span class="badge bg-success">Ground</span>';
-                                if (data === null || data === undefined) return '<span class="text-muted">-</span>';
-                                return '<span class="badge bg-secondary">' + data + '</span>';
+                            render: function (data, type, row) {
+                                if (type === 'display') {
+                                    if (data === 0) return '<span class="badge bg-success">Ground</span>';
+                                    if (data === null || data === undefined) return '<span class="text-muted">-</span>';
+                                    return '<span class="badge bg-secondary">' + data + '</span>';
+                                }
+                                return data;
                             },
                             className: 'text-center align-middle'
                         },
                         {
                             data: 'garden',
-                            render: function (data) {
-                                return data ? '<i class="bi bi-tree-fill text-success h5"></i>' : '<span class="text-muted small">-</span>';
+                            render: function (data, type, row) {
+                                if (type === 'display') {
+                                    return data ? '<i class="bi bi-tree-fill text-success h5"></i>' : '<span class="text-muted small">-</span>';
+                                }
+                                return data;
                             },
                             className: 'text-center align-middle'
                         },
