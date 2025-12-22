@@ -256,6 +256,126 @@
             color: #adb5bd;
             pointer-events: none;
         }
+
+        /* Mobile Version Styling */
+        @media (max-width: 768px) {
+            .brand-logo {
+                height: 44px;
+                margin-right: 10px;
+            }
+
+            .navbar-brand {
+                font-size: 1.4rem;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            #offersTable_wrapper .row:first-child {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .dataTables_filter {
+                text-align: center !important;
+            }
+
+            /* Hide table on mobile */
+            #offersTable {
+                display: none;
+            }
+
+            .table-responsive-wrapper {
+                display: none;
+            }
+
+            /* Mobile Card Styling */
+            .mobile-offer-card {
+                background: white;
+                border-radius: 12px;
+                padding: 15px;
+                margin-bottom: 15px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                border-left: 5px solid transparent;
+                position: relative;
+            }
+
+            .mobile-offer-card.is-favorite {
+                border-left-color: #FF4081;
+            }
+
+            .mobile-title {
+                font-size: 1.1rem;
+                font-weight: 700;
+                margin-bottom: 5px;
+                display: block;
+                color: var(--primary-color);
+                text-decoration: none;
+            }
+
+            .mobile-meta {
+                font-size: 0.85rem;
+                color: #6c757d;
+                margin-bottom: 10px;
+            }
+
+            .mobile-stats {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .mobile-stat-badge {
+                background: #f8f9fa;
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-size: 0.85rem;
+                font-weight: 600;
+            }
+
+            .mobile-price {
+                color: #198754;
+                font-weight: 800;
+                font-size: 1.1rem;
+            }
+
+            .mobile-actions {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-top: 1px solid #eee;
+                padding-top: 10px;
+                margin-top: 5px;
+            }
+
+            .mobile-fav-btn {
+                font-size: 1.4rem;
+                cursor: pointer;
+            }
+
+            #mobileOffersWrap {
+                display: block !important;
+            }
+
+            .card {
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .card-body {
+                padding: 0 !important;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #mobileOffersWrap {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -268,8 +388,9 @@
                 SCRAPPY
             </a>
             <div>
-                <button class="btn btn-outline-primary me-2" id="settingsBtn">
-                    <i class="bi bi-sliders me-2"></i>Filters & Settings
+                <button class="btn btn-outline-primary rounded-pill px-3" id="settingsBtn">
+                    <i class="bi bi-sliders"></i>
+                    <span class="d-none d-md-inline ms-2">Filters & Settings</span>
                 </button>
             </div>
         </div>
@@ -290,24 +411,48 @@
         <!-- Main Content -->
         <div class="card">
             <div class="card-body p-0">
-                <table id="offersTable" class="table table-hover mb-0" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th class="text-center">No.</th>
-                            <th class="text-center"><i class="bi bi-heart-fill"></i></th>
-                            <th>Title</th>
-                            <th>Area (m²)</th>
-                            <th>Price</th>
-                            <th>Price/m²</th>
-                            <th class="text-center">Floor</th>
-                            <th class="text-center">Garden</th>
-                            <th>Scraped Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="align-middle">
-                    </tbody>
-                </table>
+                <div class="table-responsive-wrapper">
+                    <table id="offersTable" class="table table-hover mb-0" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th class="text-center">No.</th>
+                                <th class="text-center"><i class="bi bi-heart-fill"></i></th>
+                                <th>Title</th>
+                                <th>Area (m²)</th>
+                                <th>Price</th>
+                                <th>Price/m²</th>
+                                <th class="text-center">Floor</th>
+                                <th class="text-center">Garden</th>
+                                <th>Scraped Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="align-middle">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Sorting & Card Container -->
+                <div id="mobileOffersWrap" class="p-2" style="display:none;">
+                    <div class="px-2 mb-3">
+                        <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-sort-down me-1"></i>SORT
+                            BY</label>
+                        <select id="mobileSortSelect"
+                            class="form-select form-select-sm border-0 shadow-sm rounded-pill">
+                            <option value="8,desc">Newest First</option>
+                            <option value="8,asc">Oldest First</option>
+                            <option value="4,asc">Price: Low to High</option>
+                            <option value="4,desc">Price: High to Low</option>
+                            <option value="3,desc">Area: Largest</option>
+                            <option value="3,asc">Area: Smallest</option>
+                            <option value="6,asc">Floor: Lowest</option>
+                            <option value="7,desc">Has Garden</option>
+                        </select>
+                    </div>
+                    <div id="mobileCardsContainer">
+                        <!-- Cards will be rendered here by JS -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -522,7 +667,113 @@
                     stateSave: true,
                     pagingType: 'simple_numbers',
                     dom: '<"row p-3 align-items-center"<"col-md-6"f><"col-md-6 text-end"l>><"row"<"col-12"t>><"row p-3 align-items-center"<"col-md-6"i><"col-md-6"p>>',
-                    pageLength: 25
+                    pageLength: 25,
+                    drawCallback: function (settings) {
+                        renderMobileCards(this.api().rows({ page: 'current' }).data());
+                    }
+                });
+
+                function renderMobileCards(data) {
+                    var wrap = $('#mobileCardsContainer');
+                    wrap.empty();
+
+                    if (data.length === 0) {
+                        wrap.html('<div class="text-center p-5 text-muted">No offers found</div>');
+                        return;
+                    }
+
+                    data.each(function (row) {
+                        var isFav = row.is_favorite;
+                        var card = $(`
+                            <div class="mobile-offer-card ${isFav ? 'is-favorite' : ''}" data-url="${row.url}">
+                                <a href="${row.url}" target="_blank" class="mobile-title">${row.title || '-'}</a>
+                                <div class="mobile-meta">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>${row.location || '-'}
+                                </div>
+                                <div class="mobile-stats">
+                                    <div class="mobile-stat-badge">
+                                        <i class="bi bi-aspect-ratio me-1"></i>${row.area ? row.area + ' m²' : '-'}
+                                    </div>
+                                    <div class="mobile-stat-badge">
+                                        <i class="bi bi-layers me-1"></i>${row.floor === 0 ? 'Ground' : (row.floor || '-') + ' p.'}
+                                    </div>
+                                    ${row.garden ? '<div class="mobile-stat-badge text-success"><i class="bi bi-tree-fill me-1"></i>Garden</div>' : ''}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="mobile-price">${row.price ? (typeof row.price === 'number' ? row.price.toLocaleString() : row.price) + ' zł' : '-'}</div>
+                                    <div class="text-muted small">${row.price_per_m2 ? row.price_per_m2 + ' zł/m²' : ''}</div>
+                                </div>
+                                <div class="mobile-actions">
+                                    <div class="small text-muted">
+                                        <i class="bi bi-clock me-1"></i>${formatDate(row.scraped_at)}
+                                    </div>
+                                    <div class="d-flex gap-3">
+                                        <i class="bi bi-eye-slash-fill text-danger h4 m-0 hide-offer-mobile" title="Hide"></i>
+                                        <i class="bi ${isFav ? 'bi-heart-fill favorite' : 'bi-heart text-muted'} h4 m-0 toggle-fav-mobile" title="Favorite"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                        wrap.append(card);
+                    });
+                }
+
+                function formatDate(dateStr) {
+                    if (!dateStr) return '-';
+                    var date = new Date(dateStr);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+
+                // Mobile Fav Toggle
+                $(document).on('click', '.toggle-fav-mobile', function () {
+                    var icon = $(this);
+                    var card = icon.closest('.mobile-offer-card');
+                    var url = card.data('url');
+
+                    // Find the data in table
+                    var rowData = table.rows().data().toArray().find(r => r.url === url);
+                    var newStatus = !rowData.is_favorite;
+
+                    $.ajax({
+                        url: '/api/offers/favorite',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ url: url, status: newStatus }),
+                        success: function () {
+                            // Update table data and redraw current page (which triggers cards redraw)
+                            table.rows().every(function () {
+                                var d = this.data();
+                                if (d.url === url) {
+                                    d.is_favorite = newStatus;
+                                    this.data(d).invalidate();
+                                }
+                            });
+                            table.draw(false);
+                        }
+                    });
+                });
+
+                // Mobile Hide Toggle
+                $(document).on('click', '.hide-offer-mobile', function () {
+                    var card = $(this).closest('.mobile-offer-card');
+                    var url = card.data('url');
+
+                    if (confirm("Hide this offer from the list?")) {
+                        $.ajax({
+                            url: '/api/offers/hide',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ url: url }),
+                            success: function () {
+                                table.rows().every(function () {
+                                    if (this.data().url === url) {
+                                        this.remove();
+                                    }
+                                });
+                                table.draw(false);
+                            }
+                        });
+                    }
                 });
 
                 // Toggle Favorite
@@ -707,6 +958,14 @@
                         });
                     }, 2000);
                 }
+
+                // Mobile Sorting Logic
+                $('#mobileSortSelect').on('change', function () {
+                    var val = $(this).val().split(',');
+                    var col = parseInt(val[0]);
+                    var dir = val[1];
+                    table.order([col, dir]).draw();
+                });
 
                 // Initial Check
                 $.get('/api/status', function (data) {
