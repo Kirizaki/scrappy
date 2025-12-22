@@ -36,3 +36,5 @@ manifest
 offers.csv
 # We keep config.json in the repo as the default configuration structure, 
 # but if you have private API keys later, add it here.
+
+ignore_this.py

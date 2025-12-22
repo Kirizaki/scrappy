@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCRAPPY - Real Estate Hunter</title>
 
+    <!-- Social Preview (OG Tags) -->
+    <meta property="og:title" content="SCRAPPY - Real Estate Hunter">
+    <meta property="og:description" content="Fast and automated real estate offer scouting.">
+    <meta property="og:image" content="/static/logo.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SCRAPPY - Real Estate Hunter">
+    <meta name="twitter:description" content="Fast and automated real estate offer scouting.">
+    <meta name="twitter:image" content="/static/logo.png">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -770,7 +780,7 @@
                                         this.remove();
                                     }
                                 });
-                                table.draw(false);
+                                table.ajax.reload(null, false);
                             }
                         });
                     }
@@ -915,8 +925,7 @@
                             contentType: 'application/json',
                             data: JSON.stringify({ url: row.url }),
                             success: function () {
-                                table.row($(this).closest('tr')).remove().draw(); // Instant remove
-                                // table.ajax.reload(null, false); // Or reload
+                                table.ajax.reload(null, false); // Auto-refresh desktop view
                             }
                         });
                     }

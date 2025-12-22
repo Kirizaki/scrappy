@@ -7,11 +7,11 @@ import asyncio
 import json
 from storage import load_offers, update_offer_status, CSV_FILE
 from scraper import run_scraper
+from ignore_this import check_password
 
 app = FastAPI()
 
 AUTH_COOKIE = "scrappy_auth"
-PASSWORD = "f;oiuhjpq983h4r093hfo87`y9fy87y4yr"
 
 # Mount templates
 templates = Jinja2Templates(directory="templates")
@@ -31,7 +31,7 @@ async def get_login(request: Request):
 @app.post("/login")
 async def post_login(payload: dict):
     password = payload.get("password", "").lower()
-    if password == PASSWORD:
+    if check_password(password):
         response = JSONResponse(content={"status": "success"})
         response.set_cookie(key=AUTH_COOKIE, value="true", max_age=31536000) # 1 year
         return response
