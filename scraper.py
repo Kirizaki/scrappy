@@ -13,21 +13,12 @@ def normalize_price(price_str):
     clean = re.sub(r'[^\d,.]', '', str(price_str))
     clean = clean.replace(" ", "").replace(",", ".")
     try:
-        # Handle cases like "1.200" meaning 1200 or 1.2?
-        # Typically "500 000" -> 500000. "500.000" -> 500000.
-        # But "1,5" -> 1.5.
-        # Simple heuristic: if '.' appears and it's 3 digits from end, it might be thousands separator?
-        # Polish locale usually uses space for thousands and comma for decimal.
-        # Let's assume input "500 000 zł" -> "500000".
-        # Input "500,000 zł" (unlikely in PL, usually space) -> "500000".
-        # Input "345,50 zł" -> 345.5.
-        
-        # Simpler: remove all spaces. Replace comma with dot.
-        # If multiple dots? "1.000.000" -> "1000000".
-        # If we replaced comma with dot, we might have "1.5".
-        # Let's just strip everything non-numeric except last comma/dot.
-        # Actually, let's keep it simple: Strip all spaces. Replace comma with dot.
-        return float(clean)
+        val = float(clean)
+        # If value is 1-2 digits (e.g. 50), it likely means thousands (50,000)
+        # 100 is a safe threshold as most real estate prices are > 100k or < 100 for rent (but this is sales)
+        if 0 < val < 100:
+            val *= 1000
+        return val
     except:
         return None
 
@@ -43,21 +34,79 @@ def normalize_area(area_str):
 def parse_floor(text):
     if not text: return None
     text_lower = text.lower()
-    if "parter" in text_lower or "poziom 0" in text_lower:
+    
+    # Word-based mapping for Polish floors
+    word_map = {
+        "parter": 0,
+        "pierwsze": 1,
+        "drugie": 2,
+        "trzecie": 3,
+        "czwarte": 4,
+        "piąte": 5, "piate": 5,
+        "szóste": 6, "szoste": 6,
+        "siódme": 7, "siodme": 7,
+        "ósme": 8, "osme": 8,
+        "dziewiąte": 9, "dziewiate": 9,
+        "dziesiąte": 10, "dziesiate": 10
+    }
+    
+    for word, val in word_map.items():
+        if word == "parter":
+            if f" {word}" in f" {text_lower}" or f"{word} " in f"{text_lower} ":
+                return val
+        else:
+            # For other words, check context (start of string, near floor keyword, etc)
+            # More robust: check \bword\b
+            m_word = re.search(fr'\b{word}\b(?:[ \t]*(?:piętro|p\b|p\.))?', text_lower)
+            if m_word:
+                # If it's just the word, ensure it's in a context where floor is likely
+                # For now, let's allow it if it's bounded by boundaries, to catch "Pierwsze" in a list
+                return val
+
+    if "poziom 0" in text_lower:
         return 0
-    # "1 piętro", "3 p.", "piętro 2"
-    m = re.search(r'(?:piętro|p\.|p\b)\s*(\d+)', text_lower) # piętro 1
+        
+    # Handle "6/7", "2/4 p.", "10/10"
+    # Refined: Ensure it's not a photo count (e.g. 1/20)
+    # Most floor slashes have a space or are followed by 'p.' or 'piętro'
+    # Or they are 1-2 digits / 1-2 digits where denominator is small.
+    m_slash = re.search(r'(\d{1,2})[ \t]*/[ \t]*(\d{1,2})(?![ \t]*pok)', text_lower)
+    if m_slash:
+        val = int(m_slash.group(1))
+        # Logic: If it looks like a photo count (no floor indicator nearby)
+        # We require explicit keywords like "p." or "piętro" for slash formats
+        context = text_lower[max(0, m_slash.start()-5) : min(len(text_lower), m_slash.end()+15)]
+        has_floor_word = any(x in context for x in ["p.", "piętro", "p\b", "p ", "poziom"])
+        
+        if has_floor_word:
+             return val
+
+    # Standard Polish format: "1 piętro", "3 p.", "4 p"
+    # Limit digits to 1-2 to avoid years (e.g. 2021)
+    m = re.search(r'(\d{1,2})[ \t]*(?:piętro|p\.|p\b)', text_lower)
     if m: return int(m.group(1))
     
-    m2 = re.search(r'(\d+)\s*(?:piętro|p\.|p\b)', text_lower) # 1 piętro
+    # Prefix format: "piętro 1", "p. 4"
+    m2 = re.search(r'(?:piętro|p\.|p\b)[ \t]*(\d{1,2})', text_lower)
     if m2: return int(m2.group(1))
     
+    # Handle Roman Numerals (Common in Poland: I, II, III, IV)
+    # Match "I p.", "II p.", "III piętro", etc.
+    roman_map = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii": 8, "ix": 9, "x": 10}
+    roman_m = re.search(r'\b(i{1,3}|iv|v|vi{1,3}|ix|x)\b[ \t]*(?:piętro|p\.|p\b)', text_lower)
+    if roman_m:
+        return roman_map.get(roman_m.group(1))
+
+    # Inference: If "ogródek" appears and NO floor is detected yet, it's likely ground floor (0)
+    if any(x in text_lower for x in ["ogródek", "ogrodek", "garden", "ogród", "ogrod"]):
+        return 0
+
     return None
 
 def check_garden(text):
     if not text: return False
     t = text.lower()
-    return any(x in t for x in ["ogród", "ogródek", "garden", "działka"])
+    return any(x in t for x in ["ogród", "ogródek", "garden", "działka", "ogrod", "ogrodek", "ogrodka", "dzialka", "logia"])
 
 def check_filters(offer, filters):
     # Min Area
@@ -75,16 +124,14 @@ def check_filters(offer, filters):
     # Ground Floor Only
     if filters.get("ground_floor"):
         f = offer.get("floor")
-        # If detected and NOT 0, reject.
-        # If NOT detected (None), keep (benefit of doubt) or reject?
-        # User implies filters are broken. Let's be semi-strict: if we see "1 p.", reject.
-        if f is not None and f != 0:
+        # Strict mode: If we can't detect floor, but user wants ground floor, reject it.
+        # This prevents "1 p." getting through as None.
+        if f is None or f != 0:
             return False
             
     # Has Garden
     if filters.get("garden"):
-        # If garden NOT detected, reject?
-        # Most listings with garden boast about it.
+        # Strict mode: If garden NOT detected, reject.
         if not offer.get("garden", False):
             # Try checking title just in case custom logic didn't catch it
             if not check_garden(offer.get("title", "")):
@@ -172,9 +219,9 @@ async def scrape_olx(page: Page, url: str, max_pages: int = 0):
                 page_offers.append({
                     "url": link,
                     "title": title,
-                    "price": price,
-                    "area": area,
-                    "price_per_m2": price_m2,
+                    "price": normalize_price(price),
+                    "area": normalize_area(area),
+                    "price_per_m2": normalize_price(price_m2),
                     "source": "olx",
                     "floor": floor,
                     "garden": garden
@@ -261,60 +308,63 @@ async def scrape_otodom(page: Page, url: str, max_pages: int = 0):
                 # Extract text content for everything else
                 text_content = safe_text(await card.inner_text())
                 
-                price = ""
-                area = "N/A"
-                price_m2 = "N/A"
-                location = "N/A"
+                # Price strategy: Try specific data-cy first, then tight regex
+                price_el = await card.query_selector("[data-cy='listing-item-price']")
+                if price_el:
+                    price = safe_text(await price_el.inner_text())
                 
-                # Price regex: look for "zł" 
-                # Avoid picking up price/m2 (which has /m²)
-                # Usually standard price: "500 000 zł" at end or beginning
-                # We find all matches of X zł (not followed by /)
-                prices = re.findall(r'(\d[\d\s]*\s?zł)(?!\/)', text_content)
-                if prices:
-                    # Usually the main price is the first or largest? 
-                    # Often price per m2 comes after.
-                    # Let's take the first one that looks like a total price (longer number?)
-                    # Simplified: First match is usually valid.
-                    price = prices[0]
-                
-                area_match = re.search(r'(\d+[.,]?\d*)\s*m²', text_content)
-                if area_match: area = area_match.group(1)
+                # Area strategy: Try specific data-cy
+                area_el = await card.query_selector("[data-cy='listing-item-area']")
+                if area_el:
+                    area = safe_text(await area_el.inner_text())
 
-                pm2_match = re.search(r'(\d+\s?\d+)\s*zł/m²', text_content)
-                if pm2_match: price_m2 = pm2_match.group(1).replace(" ", "")
+                # If missing, fallback to regex but on restricted text
+                if not price or not area:
+                    # Price: look for digits with single spaces between groups, finishing with zł
+                    prices = re.findall(r'(\d{1,3}(?:[\s\xa0]\d{3})*\s?zł)(?!\/)', text_content)
+                    if prices and not price:
+                        price = prices[0]
+                    
+                    if not area:
+                        area_match = re.search(r'(\d+[.,]?\d*)\s*m²', text_content)
+                        if area_match: area = area_match.group(1)
                 
-                # Location strategy: Look for "Gdańsk" or similar in text
-                # We can iterate over common cities in config or just greedy grab
-                # "Gdańsk, Wrzeszcz" pattern 
-                # Let's look for known city names in the text
-                known_cities = ["Gdańsk", "Gdynia", "Sopot", "Rumia", "Reda", "Wejherowo"]
-                found_loc = None
-                for city in known_cities:
-                    if city in text_content:
-                        # Try to extract the context?
-                        # Regex: (City, [Word]+)
-                        loc_m = re.search(fr'({city}[^0-9\n\r]*)', text_content)
-                        if loc_m:
-                            found_loc = loc_m.group(1).strip().strip(",-")
-                            break
+                # Price/m2
+                pm2_match = re.search(r'(\d+[\s\xa0]?\d+)\s*zł/m²', text_content)
+                if pm2_match: price_m2 = pm2_match.group(1).replace(" ", "").replace("\xa0", "")
+
+                # Location strategy: Try specific data-cy
+                loc_el = await card.query_selector("[data-cy='listing-item-location']")
+                if loc_el:
+                    location = safe_text(await loc_el.inner_text())
                 
-                if found_loc:
-                     location = found_loc
-                else:
-                     # Fallback: look for generic "City, District" pattern if possible, 
-                     # but hard without DOM structure.
-                     pass
-                     
+                if location == "N/A":
+                    # Fallback strategy: Look for "Gdańsk" or similar in text
+                    # We can iterate over common cities in config or just greedy grab
+                    # "Gdańsk, Wrzeszcz" pattern 
+                    # Let's look for known city names in the text
+                    known_cities = ["Gdańsk", "Gdynia", "Sopot", "Rumia", "Reda", "Wejherowo"]
+                    found_loc = None
+                    for city in known_cities:
+                        if city in text_content:
+                            # Try to extract the context?
+                            # Regex: (City, [Word]+)
+                            loc_m = re.search(fr'({city}[^0-9\n\r]*)', text_content)
+                            if loc_m:
+                                found_loc = loc_m.group(1).strip().strip(",-")
+                                break
+                    if found_loc:
+                        location = found_loc
+                
                 floor = parse_floor(text_content)
                 garden = check_garden(text_content)
 
                 page_offers.append({
                     "url": link,
                     "title": title,
-                    "price": price,
-                    "area": area,
-                    "price_per_m2": price_m2,
+                    "price": normalize_price(price),
+                    "area": normalize_area(area),
+                    "price_per_m2": normalize_price(price_m2),
                     "location": location,
                     "source": "otodom",
                     "floor": floor,
@@ -423,8 +473,9 @@ async def scrape_morizon_impl(page: Page, url: str):
              floor = parse_floor(text_content)
              garden = check_garden(text_content)
              
-             offers.append({"url": link, "title": title, "price": price, "area": area, 
-                 "price_per_m2": price_m2, "location": location, "source": "morizon",
+             offers.append({"url": link, "title": title, 
+                 "price": normalize_price(price), "area": normalize_area(area), 
+                 "price_per_m2": normalize_price(price_m2), "location": location, "source": "morizon",
                  "floor": floor, "garden": garden})
         except: pass
     return offers
@@ -501,8 +552,9 @@ async def scrape_trojmiasto(page: Page, url: str, max_pages: int = 0):
                 garden = check_garden(text_content)
 
                 page_offers.append({
-                    "url": link, "title": title, "price": price, "area": area, 
-                    "price_per_m2": price_m2, "location": location, "source": "trojmiasto",
+                    "url": link, "title": title, 
+                    "price": normalize_price(price), "area": normalize_area(area), 
+                    "price_per_m2": normalize_price(price_m2), "location": location, "source": "trojmiasto",
                     "floor": floor, "garden": garden
                 })
             except: pass

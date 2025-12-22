@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 CSV_FILE = "offers.csv"
-COLUMNS = ["url", "title", "price", "area", "price_per_m2", "location", "floor", "garden", "scraped_at", "is_favorite", "is_hidden"]
+COLUMNS = ["no", "url", "title", "price", "area", "price_per_m2", "location", "floor", "garden", "scraped_at", "is_favorite", "is_hidden"]
 
 def load_offers():
     if not os.path.exists(CSV_FILE):
@@ -86,6 +86,15 @@ def save_offers(new_offers: list[dict]):
             merged_list.append(item)
 
     final_df = pd.DataFrame(merged_list)
+    
+    # Sort by scraped_at descending to keep newest at top, then assign "no"
+    if "scraped_at" in final_df.columns:
+        final_df = final_df.sort_values(by="scraped_at", ascending=False)
+        
+    # Assign ordinal numbering (1-based)
+    final_df = final_df.reset_index(drop=True)
+    final_df["no"] = final_df.index + 1
+    
     final_df = final_df[COLUMNS] # Reorder
     final_df.to_csv(CSV_FILE, index=False)
     print(f"Saved {len(final_df)} offers to {CSV_FILE}")

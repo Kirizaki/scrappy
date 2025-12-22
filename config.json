@@ -1,6 +1,6 @@
 {
     "filters": {
-        "min_area": 65,
+        "min_area": 60,
         "max_price": null,
         "district": [
             "Wrzeszcz",
