@@ -1,0 +1,37 @@
+{
+    "filters": {
+        "min_area": 65,
+        "max_price": null,
+        "district": [
+            "Wrzeszcz",
+            "Wrzeszcz G\u00f3rny",
+            "Wrzeszcz Dolny",
+            "Anio\u0142ki",
+            "Strzy\u017ca"
+        ],
+        "ground_floor": true,
+        "garden": false
+    },
+    "portals": {
+        "olx": {
+            "base_url": "https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/gdansk/",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "otodom": {
+            "base_url": "https://www.otodom.pl/pl/wyniki/sprzedaz/mieszkanie/pomorskie/gdansk/gdansk",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "morizon": {
+            "base_url": "https://www.morizon.pl/mieszkania/gdansk/?ps%5Bmarket_type%5D=2",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "trojmiasto": {
+            "base_url": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/",
+            "enabled": true,
+            "max_pages": 0
+        }
+    }
+}

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCRAPPY - Real Estate Hunter</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --primary-color: #006994;
+            /* Ocean Blue */
+            --secondary-color: #FF7F50;
+            /* Coral */
+            --bg-light: #F0F8FF;
+            /* Alice Blue */
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        /* Navbar & Branding */
+        .navbar {
+            background-color: white !important;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            padding: 1rem 0;
+        }
+
+        .brand-logo {
+            height: 50px;
+            width: auto;
+            margin-right: 15px;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 8px 20px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:active,
+        .btn-primary:focus {
+            background-color: #ff6329;
+            border-color: #ff6329;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            background-color: #ff9d7d;
+            border-color: #ff9d7d;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Table Styling */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        table.dataTable thead th {
+            border-bottom: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        table.table-striped>tbody>tr:nth-of-type(odd)>* {
+            background-color: rgba(0, 105, 148, 0.03);
+        }
+
+        .favorite {
+            color: #FF4081;
+            /* Pinkish red for heart */
+            transition: transform 0.2s;
+        }
+
+        .favorite:hover {
+            transform: scale(1.2);
+        }
+
+        .action-btn {
+            cursor: pointer;
+        }
+
+        .offer-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .offer-link:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-title {
+            font-weight: 700;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus,
+        .form-check-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 105, 148, 0.25);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar mb-4 sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="/static/logo.png" alt="Scrappy Logo" class="brand-logo">
+                SCRAPPY
+            </a>
+            <div>
+                <button class="btn btn-outline-primary me-2" id="settingsBtn">
+                    <i class="bi bi-sliders me-2"></i>Filters & Settings
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="status-bar">
+            <div>
+                <i class="bi bi-activity me-2 text-muted"></i>
+                <span id="scraperStatus" class="status-text">Ready to hunt!</span>
+            </div>
+            <button id="runScraperBtn" class="btn btn-primary">
+                <i class="bi bi-search me-2"></i>HUNT OFFERS
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="card">
+            <div class="card-body p-0">
+                <table id="offersTable" class="table table-hover mb-0" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th class="text-center"><i class="bi bi-heart-fill"></i></th>
+                            <th>Title</th>
+                            <th>Area (m²)</th>
+                            <th>Price</th>
+                            <th>Price/m²</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="align-middle">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal fade" id="settingsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-gear-wide-connected me-2"></i>Hunt Configuration</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="configForm">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-funnel-fill text-primary me-2 fst-normal fs-5"></i>
+                                <h6 class="fw-bold m-0 text-uppercase text-primary">Target Criteria</h6>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Min Area (m²)</label>
+                                    <input type="number" class="form-control" id="filter_min_area"
+                                        placeholder="e.g. 50">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Max Price (PLN)</label>
+                                    <input type="number" class="form-control" id="filter_max_price"
+                                        placeholder="e.g. 600000">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">District / Location</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+                                        <input type="text" class="form-control" id="filter_district"
+                                            placeholder="e.g. Wrzeszcz; Oliwa (semicolon separated)">
+                                    </div>
+                                    <div class="form-text text-muted smaller ms-1">Use semicolons to separate multiple
+                                        districts.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 border rounded bg-light mt-2">
+                                        <input class="form-check-input" type="checkbox" id="filter_ground_floor">
+                                        <label class="form-check-label fw-bold" for="filter_ground_floor">Ground Floor
+                                            Only</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check p-3 border rounded bg-light mt-2">
+                                        <input class="form-check-input" type="checkbox" id="filter_garden">
+                                        <label class="form-check-label fw-bold" for="filter_garden">Must Have
+                                            Garden</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4 text-muted">
+
+                            <button class="btn btn-sm btn-link text-decoration-none p-0 mb-3" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#advancedBaseUrls">
+                                <i class="bi bi-hdd-network me-1"></i> Advanced: Portal Configuration <i
+                                    class="bi bi-chevron-down ms-1"></i>
+                            </button>
+
+                            <div class="collapse" id="advancedBaseUrls">
+                                <div class="card card-body bg-light border-0">
+                                    <div id="baseUrlsContainer"></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary px-4" id="saveConfigBtn">Save & Apply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+        <script>
+            $(document).ready(function () {
+                var table = $('#offersTable').DataTable({
+                    ajax: {
+                        url: '/api/offers',
+                        dataSrc: ''
+                    },
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: "Search offers..."
+                    },
+                    columns: [
+                        {
+                            data: 'is_favorite',
+                            render: function (data, type, row) {
+                                return data ? '<i class="bi bi-heart-fill favorite h4"></i>' : '<i class="bi bi-heart h4 text-muted"></i>';
+                            },
+                            className: 'text-center action-btn toggle-fav align-middle',
+                            width: "60px"
+                        },
+                        {
+                            data: 'title',
+                            render: function (data, type, row) {
+                                return `<div class="fw-bold"><a href="${row.url}" target="_blank" class="offer-link">${data || 'Unnamed Offer'}</a></div>
+                                        <div class="small text-muted"><i class="bi bi-geo-alt-fill me-1"></i>${row.location || 'Unknown Location'}</div>`;
+                            }
+                        },
+                        {
+                            data: 'area',
+                            render: function (data) { return data ? data + ' m²' : '-' },
+                            className: 'text-center align-middle'
+                        },
+                        {
+                            data: 'price',
+                            className: 'fw-bold text-success align-middle'
+                        },
+                        {
+                            data: 'price_per_m2',
+                            render: function (data) { return data ? data + ' zł/m²' : '-' },
+                            className: 'text-muted small align-middle'
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                return '<button class="btn btn-outline-danger btn-sm hide-offer rounded-circle" title="Hide Offer"><i class="bi bi-eye-slash-fill"></i></button>';
+                            },
+                            className: 'text-center align-middle',
+                            width: "80px"
+                        }
+                    ],
+                    order: [[1, 'asc']],
+                    dom: '<"p-3"ft>p', // Custom cleaner DOM layout for DataTables
+                    pageLength: 25
+                });
+
+                // Toggle Favorite
+                $('#offersTable tbody').on('click', '.toggle-fav', function () {
+                    var row = table.row($(this).closest('tr')).data();
+                    var newStatus = !row.is_favorite;
+
+                    $.ajax({
+                        url: '/api/offers/favorite',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ url: row.url, status: newStatus }),
+                        success: function () {
+                            row.is_favorite = newStatus;
+                            table.row($(this).closest('tr')).data(row).draw(false);
+                            table.ajax.reload(null, false);
+                        }
+                    });
+                });
+
+                // Settings Modal Logic
+                var configData = {};
+
+                $('#settingsBtn').click(function () {
+                    $.get('/api/config', function (data) {
+                        configData = data;
+                        if (!configData.filters) configData.filters = {};
+
+                        $('#filter_min_area').val(configData.filters.min_area || '');
+                        $('#filter_max_price').val(configData.filters.max_price || '');
+
+                        var distVal = configData.filters.district || '';
+                        if (Array.isArray(distVal)) {
+                            distVal = distVal.join('; ');
+                        }
+                        $('#filter_district').val(distVal);
+
+                        $('#filter_ground_floor').prop('checked', !!configData.filters.ground_floor);
+                        $('#filter_garden').prop('checked', !!configData.filters.garden);
+
+                        if (configData.portals) {
+                            renderBaseUrls(configData.portals);
+                        } else {
+                            $('#baseUrlsContainer').html('<p class="text-danger">Error: Invalid config format</p>');
+                        }
+
+                        var modal = new bootstrap.Modal(document.getElementById('settingsModal'));
+                        modal.show();
+                    });
+                });
+
+                function renderBaseUrls(portals) {
+                    var html = '';
+                    for (var portal in portals) {
+                        var p = portals[portal];
+                        html += '<div class="mb-3 border-bottom pb-3">';
+                        html += '<div class="d-flex justify-content-between align-items-center mb-2">';
+                        html += '<label class="form-label text-capitalize fw-bold m-0 text-dark"><i class="bi bi-globe me-2"></i>' + portal + '</label>';
+                        html += '<div class="form-check form-switch">';
+                        html += '<input class="form-check-input config-enabled" type="checkbox" data-portal="' + portal + '" ' + (p.enabled ? 'checked' : '') + '>';
+                        html += '</div></div>';
+
+                        html += '<label class="form-label small text-muted">Base URL</label>';
+                        html += '<input type="text" class="form-control form-control-sm config-base-url mb-2" data-portal="' + portal + '" value="' + (p.base_url || '') + '">';
+
+                        html += '<div class="row align-items-center g-2">';
+                        html += '<div class="col-auto"><label class="form-label small m-0 text-muted">Max Pages:</label></div>';
+                        html += '<div class="col-3"><input type="number" class="form-control form-control-sm config-max-pages" data-portal="' + portal + '" value="' + (p.max_pages !== undefined ? p.max_pages : 0) + '"></div>';
+                        html += '<div class="col-auto"><span class="small text-muted">(0 = All)</span></div>';
+                        html += '</div>';
+                        html += '</div>';
+                    }
+                    $('#baseUrlsContainer').html(html);
+                }
+
+                $('#saveConfigBtn').click(function () {
+                    // Gather Filters
+                    if (!configData.filters) configData.filters = {};
+                    configData.filters.min_area = $('#filter_min_area').val() ? parseInt($('#filter_min_area').val()) : null;
+                    configData.filters.max_price = $('#filter_max_price').val() ? parseInt($('#filter_max_price').val()) : null;
+
+                    var distInput = $('#filter_district').val();
+                    if (distInput) {
+                        configData.filters.district = distInput.split(';').map(item => item.trim()).filter(item => item !== "");
+                    } else {
+                        configData.filters.district = [];
+                    }
+
+                    configData.filters.ground_floor = $('#filter_ground_floor').is(':checked');
+                    configData.filters.garden = $('#filter_garden').is(':checked');
+
+                    // Gather Portals
+                    if (!configData.portals) configData.portals = {};
+                    $('#baseUrlsContainer .mb-3').each(function () {
+                        var container = $(this);
+                        var portal = container.find('.config-base-url').data('portal');
+
+                        if (!configData.portals[portal]) configData.portals[portal] = {};
+
+                        configData.portals[portal].base_url = container.find('.config-base-url').val();
+                        configData.portals[portal].enabled = container.find('.config-enabled').is(':checked');
+                        configData.portals[portal].max_pages = parseInt(container.find('.config-max-pages').val()) || 0;
+                    });
+
+                    $.ajax({
+                        url: '/api/config',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(configData),
+                        success: function () {
+                            // Close modal
+                            var modalEl = document.getElementById('settingsModal');
+                            var modal = bootstrap.Modal.getInstance(modalEl);
+                            modal.hide();
+
+                            // Show toast or alert? Alert for now.
+                            // Better: Refresh page to apply potential severe changes
+                            alert('Configuration saved! Reloading...');
+                            location.reload();
+                        },
+                        error: function () {
+                            alert('Error saving configuration');
+                        }
+                    });
+                });
+
+                // Hide Offer
+                $('#offersTable tbody').on('click', '.hide-offer', function () {
+                    var row = table.row($(this).closest('tr')).data();
+                    if (confirm("Hide this offer from the list?")) {
+                        $.ajax({
+                            url: '/api/offers/hide',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ url: row.url }),
+                            success: function () {
+                                table.row($(this).closest('tr')).remove().draw(); // Instant remove
+                                // table.ajax.reload(null, false); // Or reload
+                            }
+                        });
+                    }
+                });
+
+                // Run Scraper
+                $('#runScraperBtn').click(function () {
+                    var btn = $(this);
+                    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Hunting...');
+                    $('#scraperStatus').text('Scraper running in background...');
+
+                    $.post('/api/run', function (data) {
+                        pollStatus();
+                    }).fail(function (xhr) {
+                        if (xhr.status == 409) {
+                            $('#scraperStatus').text('Scrapper is already busy!');
+                            pollStatus();
+                        } else {
+                            btn.prop('disabled', false).html('<i class="bi bi-search me-2"></i>HUNT OFFERS');
+                            $('#scraperStatus').text('Error starting scraper.');
+                        }
+                    });
+                });
+
+                function pollStatus() {
+                    var btn = $('#runScraperBtn');
+                    var interval = setInterval(function () {
+                        $.get('/api/status', function (data) {
+                            if (data.running) {
+                                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Hunting...');
+                                $('#scraperStatus').text('Hunting for offers...');
+                                table.ajax.reload(null, false); // Auto-refresh table
+                            } else {
+                                clearInterval(interval);
+                                btn.prop('disabled', false).html('<i class="bi bi-search me-2"></i>HUNT OFFERS');
+                                $('#scraperStatus').text('Hunt complete. Ready for new mission.');
+                                table.ajax.reload(null, false);
+                            }
+                        });
+                    }, 2000);
+                }
+
+                // Initial Check
+                $.get('/api/status', function (data) {
+                    if (data.running) {
+                        pollStatus();
+                    }
+                });
+            });
+        </script>
+</body>
+
+</html>
