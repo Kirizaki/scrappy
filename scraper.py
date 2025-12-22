@@ -81,13 +81,13 @@ def parse_floor(text):
         if has_floor_word:
              return val
 
-    # Standard Polish format: "1 piętro", "3 p.", "4 p"
+    # Standard Polish format: "1 piętro", "3 p.", "4 p", "poziom 1"
     # Limit digits to 1-2 to avoid years (e.g. 2021)
-    m = re.search(r'(\d{1,2})\s*(?:piętro|p\.|p\b)', text_lower)
+    m = re.search(r'(\d{1,2})\s*(?:piętro|p\.|p\b|poziom)', text_lower)
     if m: return int(m.group(1))
     
-    # Prefix format: "piętro 1", "p. 4"
-    m2 = re.search(r'(?:piętro|p\.|p\b)\s*(\d{1,2})', text_lower)
+    # Prefix format: "piętro 1", "p. 4", "poziom 2"
+    m2 = re.search(r'(?:piętro|p\.|p\b|poziom)\s*(\d{1,2})', text_lower)
     if m2: return int(m2.group(1))
     
     # Handle Roman Numerals (Common in Poland: I, II, III, IV)
@@ -212,6 +212,16 @@ async def scrape_olx(page: Page, url: str, max_pages: int = 0):
                 pm2_match = re.search(r'(\d+\s?\d+)\s*zł/m²', text_content)
                 if pm2_match: price_m2 = pm2_match.group(1).replace(" ", "")
 
+                # Location: OLX usually has it in a p tag with specific class or just after price
+                # Or look for text like "Gdańsk, Wrzeszcz"
+                location = "N/A"
+                loc_el = await card.query_selector("p[data-testid='location-date']")
+                if loc_el:
+                    location = safe_text(await loc_el.inner_text())
+                    # Strip date if present "Gdańsk, Wrzeszcz - Dzisiaj 10:00"
+                    if " - " in location:
+                        location = location.split(" - ")[0]
+                
                 # Extract extras
                 floor = parse_floor(text_content)
                 garden = check_garden(text_content)
@@ -222,6 +232,7 @@ async def scrape_olx(page: Page, url: str, max_pages: int = 0):
                     "price": normalize_price(price),
                     "area": normalize_area(area),
                     "price_per_m2": normalize_price(price_m2),
+                    "location": location,
                     "source": "olx",
                     "floor": floor,
                     "garden": garden
