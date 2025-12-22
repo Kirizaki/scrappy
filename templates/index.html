@@ -421,8 +421,8 @@
                         {
                             data: 'title',
                             render: function (data, type, row) {
-                                return `<div class="fw-bold"><a href="${row.url}" target="_blank" class="offer-link">${data || 'Unnamed Offer'}</a></div>
-                                        <div class="small text-muted"><i class="bi bi-geo-alt-fill me-1"></i>${row.location || 'Unknown Location'}</div>`;
+                                return `<div class="fw-bold"><a href="${row.url}" target="_blank" class="offer-link">${data || '-'}</a></div>
+                                        <div class="small text-muted"><i class="bi bi-geo-alt-fill me-1"></i>${row.location || '-'}</div>`;
                             }
                         },
                         {
