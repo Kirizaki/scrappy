@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCRAPPY - Enter Hunter Base</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="icon" type="image/png" href="/static/scrappy.png">
+    <style>
+        :root {
+            --primary-color: #006994;
+            --secondary-color: #FF7F50;
+            --bg-light: #F0F8FF;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-light);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+
+        .brand-name {
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 20px;
+            border: 2px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 105, 148, 0.1);
+        }
+
+        .btn-hunt {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-hunt:hover {
+            background-color: #ff6329;
+            transform: translateY(-2px);
+        }
+
+        .error-msg {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <img src="/static/scrappy.png" alt="Logo" class="brand-logo">
+        <div class="brand-name">SCRAPPY</div>
+        <form id="loginForm">
+            <div class="mb-3">
+                <input type="password" class="form-control text-center" id="password" placeholder="Enter Password"
+                    required autofocus>
+            </div>
+            <button type="submit" class="btn btn-hunt">
+                <i class="bi bi-unlock-fill me-2"></i>GO HUNT!
+            </button>
+            <div id="error" class="error-msg">Access Denied: Wrong Password</div>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script>
+        $('#loginForm').on('submit', function (e) {
+            e.preventDefault();
+            const password = $('#password').val();
+
+            $.ajax({
+                url: '/login',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ password: password }),
+                success: function () {
+                    window.location.href = '/';
+                },
+                error: function () {
+                    $('#error').fadeIn();
+                    $('#password').val('').focus();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

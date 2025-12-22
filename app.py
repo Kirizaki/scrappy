@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import pandas as pd
@@ -10,18 +10,43 @@ from scraper import run_scraper
 
 app = FastAPI()
 
+AUTH_COOKIE = "scrappy_auth"
+PASSWORD = "f;oiuhjpq983h4r093hfo87`y9fy87y4yr"
+
 # Mount templates
 templates = Jinja2Templates(directory="templates")
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+def is_authenticated(request: Request):
+    return request.cookies.get(AUTH_COOKIE) == "true"
+
+@app.get("/login", response_class=HTMLResponse)
+async def get_login(request: Request):
+    if is_authenticated(request):
+        return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login")
+async def post_login(payload: dict):
+    password = payload.get("password", "").lower()
+    if password == PASSWORD:
+        response = JSONResponse(content={"status": "success"})
+        response.set_cookie(key=AUTH_COOKIE, value="true", max_age=31536000) # 1 year
+        return response
+    raise HTTPException(status_code=401, detail="Invalid password")
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    if not is_authenticated(request):
+        return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/api/offers")
-async def get_offers():
+async def get_offers(request: Request):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     df = load_offers()
     # Filter out hidden
     # Actually user said "mark as hidden... will keep in csv, but will not be shown in the table"
@@ -40,7 +65,9 @@ async def get_offers():
     return df.to_dict(orient="records")
 
 @app.post("/api/offers/favorite")
-async def toggle_favorite(payload: dict):
+async def toggle_favorite(request: Request, payload: dict):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     url = payload.get("url")
     current_status = payload.get("status") # True or False
     if not url:
@@ -52,7 +79,9 @@ async def toggle_favorite(payload: dict):
     return {"status": "success", "new_state": current_status}
 
 @app.post("/api/offers/hide")
-async def toggle_hidden(payload: dict):
+async def toggle_hidden(request: Request, payload: dict):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     url = payload.get("url")
     if not url:
         raise HTTPException(status_code=400, detail="URL required")
@@ -67,11 +96,15 @@ async def toggle_hidden(payload: dict):
 scraper_running = False
 
 @app.get("/api/status")
-async def get_status():
+async def get_status(request: Request):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     return {"running": scraper_running}
 
 @app.post("/api/run")
-async def trigger_scraper(background_tasks: BackgroundTasks):
+async def trigger_scraper(request: Request, background_tasks: BackgroundTasks):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     global scraper_running
     if scraper_running:
         raise HTTPException(status_code=409, detail="Scraper already running")
@@ -81,7 +114,9 @@ async def trigger_scraper(background_tasks: BackgroundTasks):
     return {"status": "Scraper started in background"}
 
 @app.get("/api/config")
-async def get_config():
+async def get_config(request: Request):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     try:
         with open("config.json", "r") as f:
             return json.load(f)
@@ -90,6 +125,8 @@ async def get_config():
 
 @app.post("/api/config")
 async def update_config(request: Request):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
     new_config = await request.json()
     with open("config.json", "w") as f:
         json.dump(new_config, f, indent=4)
