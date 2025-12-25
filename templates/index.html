@@ -155,6 +155,12 @@
             transform: scale(1.2);
         }
 
+        /* Target cells directly to override table-striped background */
+        table.dataTable tbody tr.offer-selected>*,
+        .mobile-offer-card.offer-selected {
+            background-color: rgba(255, 226, 80, 0.554) !important;
+        }
+
         .action-btn {
             cursor: pointer;
         }
@@ -680,7 +686,48 @@
                     pageLength: 25,
                     drawCallback: function (settings) {
                         renderMobileCards(this.api().rows({ page: 'current' }).data());
+                    },
+                    createdRow: function (row, data, dataIndex) {
+                        var selectedUrl = getSelectedOffer();
+                        if (data.url === selectedUrl) {
+                            $(row).addClass('offer-selected');
+                        }
                     }
+                });
+
+                // Selected Offer Logic
+                function getSelectedOffer() {
+                    return localStorage.getItem('selectedOffer');
+                }
+
+                function selectOffer(url) {
+                    // Update storage
+                    localStorage.setItem('selectedOffer', url);
+
+                    // Update Visuals
+                    $('.offer-selected').removeClass('offer-selected');
+
+                    // Highlight rows with this URL (could be duplicate rows or mobile/desktop)
+                    // We use the data-url attribute or find by link href
+                    // For table rows:
+                    var table = $('#offersTable').DataTable();
+                    table.rows().every(function () {
+                        if (this.data().url === url) {
+                            $(this.node()).addClass('offer-selected');
+                        } else {
+                            $(this.node()).removeClass('offer-selected');
+                        }
+                    });
+
+                    // For mobile cards:
+                    $('.mobile-offer-card').removeClass('offer-selected');
+                    $(`.mobile-offer-card[data-url="${url}"]`).addClass('offer-selected');
+                }
+
+                // Global listener for offer links
+                $('body').on('click', '.offer-link, .mobile-title', function () {
+                    var url = $(this).attr('href');
+                    selectOffer(url);
                 });
 
                 function renderMobileCards(data) {
@@ -692,10 +739,13 @@
                         return;
                     }
 
+                    var selectedUrl = getSelectedOffer();
+
                     data.each(function (row) {
                         var isFav = row.is_favorite;
+                        var isSelected = (row.url === selectedUrl);
                         var card = $(`
-                            <div class="mobile-offer-card ${isFav ? 'is-favorite' : ''}" data-url="${row.url}">
+                            <div class="mobile-offer-card ${isFav ? 'is-favorite' : ''} ${isSelected ? 'offer-selected' : ''}" data-url="${row.url}">
                                 <a href="${row.url}" target="_blank" class="mobile-title">${row.title || '-'}</a>
                                 <div class="mobile-meta">
                                     <i class="bi bi-geo-alt-fill me-1"></i>${row.location || '-'}
