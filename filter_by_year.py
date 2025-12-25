@@ -117,6 +117,19 @@ async def process_offers(input_file):
         
         for index, row in df.iterrows():
             url = str(row['url'])
+            row_dict = row.to_dict()
+
+            # Check if likely already hidden
+            is_already_hidden = False
+            val = row.get("is_hidden")
+            if val is True or str(val).lower() == "true":
+                is_already_hidden = True
+
+            if is_already_hidden:
+                print(f"[{index+1}/{len(df)}] ALREADY HIDDEN (SKIP) - {str(row.get('title', 'No Title'))[:30]}...")
+                row_dict["is_hidden"] = True
+                updated_offers.append(row_dict)
+                continue
             
             # Check year
             year = await get_year_built(page, url)
@@ -127,7 +140,6 @@ async def process_offers(input_file):
             # - If year >= 1960: HIDE (is_hidden = True)
             
             status = ""
-            row_dict = row.to_dict()
             
             if year is None:
                 # Keep active
