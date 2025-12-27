@@ -115,7 +115,7 @@ async def build_url(base_url, filters, portal):
     new_query = urlencode(query, doseq=True)
     return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
 
-async def run_scraper():
+async def run_scraper(progress_callback=None):
     with open(CONFIG_FILE, 'r') as f:
         config = json.load(f)
         
@@ -166,10 +166,16 @@ async def run_scraper():
                              items_to_scrape.append((p_name, final_url, max_pages, []))
 
         all_gathered = []
+        total_tasks = len(items_to_scrape)
 
-        for portal_name, url, max_pages, district_context in items_to_scrape:
+        for i, (portal_name, url, max_pages, district_context) in enumerate(items_to_scrape):
             if portal_name not in scrapers: continue
             
+            # Report Progress
+            if progress_callback:
+                task_desc = f"{portal_name.title()} - {district_context[0] if district_context else 'All'}"
+                progress_callback(i, total_tasks, task_desc)
+
             context = await browser.new_context(
                 user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             )
@@ -213,7 +219,11 @@ async def run_scraper():
             finally:
                 await page.close()
                 await context.close()
-                
+        
+        # Final update
+        if progress_callback:
+            progress_callback(total_tasks, total_tasks, "Done")
+
         await browser.close()
         print(f"Total offers: {len(all_gathered)}")
 

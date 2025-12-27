@@ -419,6 +419,19 @@
                 <i class="bi bi-activity me-2 text-muted"></i>
                 <span id="scraperStatus" class="status-text">Ready to hunt!</span>
             </div>
+
+            <div id="progressContainer" class="flex-grow-1 mx-4 d-none">
+                <div class="d-flex justify-content-between small mb-1">
+                    <span class="fw-bold text-muted" id="progressTask">Starting...</span>
+                    <span class="text-muted" id="progressPercent">0%</span>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div id="scraperProgressBar"
+                        class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar"
+                        style="width: 0%"></div>
+                </div>
+            </div>
+
             <button id="runScraperBtn" class="btn btn-primary">
                 <i class="bi bi-search me-2"></i>HUNT OFFERS
             </button>
@@ -1002,16 +1015,50 @@
 
                 function pollStatus() {
                     var btn = $('#runScraperBtn');
+                    var statusText = $('#scraperStatus');
+                    var progressContainer = $('#progressContainer');
+                    var progressBar = $('#scraperProgressBar');
+                    var progressTask = $('#progressTask');
+                    var progressPercent = $('#progressPercent');
+
                     var interval = setInterval(function () {
                         $.get('/api/status', function (data) {
                             if (data.running) {
                                 btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Hunting...');
-                                $('#scraperStatus').text('Hunting for offers...');
-                                table.ajax.reload(null, false); // Auto-refresh table
+                                statusText.text('Hunting for offers...');
+                                statusText.addClass('text-warning').removeClass('text-success');
+                                progressContainer.removeClass('d-none');
+                                table.ajax.reload(null, false);
+
+                                // Progress Update
+                                $.get('/api/progress', function (pData) {
+                                    var processed = pData.processed || 0;
+                                    var total = pData.total || 1;
+                                    var pct = total > 0 ? Math.round((processed / total) * 100) : 0;
+                                    var taskName = pData.current_task || "Processing...";
+                                    var eta = pData.eta_seconds;
+
+                                    if (pct > 100) pct = 100;
+
+                                    var etaText = "";
+                                    if (eta !== null && eta !== undefined && processed > 0) {
+                                        var m = Math.floor(eta / 60);
+                                        var s = eta % 60;
+                                        etaText = ` (~${m}m ${s}s left)`;
+                                    }
+
+                                    progressBar.css('width', pct + '%');
+                                    progressPercent.text(pct + '%' + etaText);
+                                    progressTask.text(taskName);
+                                });
+
                             } else {
                                 clearInterval(interval);
                                 btn.prop('disabled', false).html('<i class="bi bi-search me-2"></i>HUNT OFFERS');
-                                $('#scraperStatus').text('Hunt complete. Ready for new mission.');
+                                statusText.text('Hunt complete. Ready for new mission.');
+                                statusText.removeClass('text-warning').addClass('text-success');
+                                progressContainer.addClass('d-none');
+                                progressBar.css('width', '0%');
                                 table.ajax.reload(null, false);
                             }
                         });

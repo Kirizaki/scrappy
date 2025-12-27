@@ -92,8 +92,37 @@ async def toggle_hidden(request: Request, payload: dict):
     return {"status": "success"}
 
 
-# Global lock
+
+# Global Lock & Progress
+import time
 scraper_running = False
+scraper_start_time = 0
+scraper_progress = {
+    "processed": 0,
+    "total": 0,
+    "current_task": "",
+    "status": "idle", # idle, running, done
+    "eta_seconds": None
+}
+
+def update_progress(processed, total, task_name):
+    global scraper_progress, scraper_start_time
+    scraper_progress["processed"] = processed
+    scraper_progress["total"] = total
+    scraper_progress["current_task"] = task_name
+    scraper_progress["status"] = "running"
+    
+    if processed > 0 and total > 0:
+        elapsed = time.time() - scraper_start_time
+        avg_time = elapsed / processed
+        remaining = total - processed
+        scraper_progress["eta_seconds"] = int(avg_time * remaining)
+    else:
+        scraper_progress["eta_seconds"] = None
+
+    if processed >= total and total > 0:
+         scraper_progress["status"] = "done"
+         scraper_progress["eta_seconds"] = 0
 
 @app.get("/api/status")
 async def get_status(request: Request):
@@ -101,15 +130,31 @@ async def get_status(request: Request):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return {"running": scraper_running}
 
+@app.get("/api/progress")
+async def get_progress(request: Request):
+    if not is_authenticated(request):
+         raise HTTPException(status_code=401, detail="Unauthorized")
+    return scraper_progress
+
 @app.post("/api/run")
 async def trigger_scraper(request: Request, background_tasks: BackgroundTasks):
     if not is_authenticated(request):
         raise HTTPException(status_code=401, detail="Unauthorized")
-    global scraper_running
+    global scraper_running, scraper_progress, scraper_start_time
     if scraper_running:
         raise HTTPException(status_code=409, detail="Scraper already running")
     
     scraper_running = True
+    scraper_start_time = time.time()
+    # Reset progress
+    scraper_progress = {
+        "processed": 0,
+        "total": 0, 
+        "current_task": "Starting...",
+        "status": "running",
+        "eta_seconds": None
+    }
+    
     background_tasks.add_task(run_scraper_wrapper)
     return {"status": "Scraper started in background"}
 
@@ -135,11 +180,12 @@ async def update_config(request: Request):
 async def run_scraper_wrapper():
     global scraper_running
     try:
-        await run_scraper()
+        await run_scraper(progress_callback=update_progress)
     except Exception as e:
         print(f"Scraper error: {e}")
     finally:
         scraper_running = False
+        scraper_progress["status"] = "idle"
 
 if __name__ == "__main__":
     import uvicorn
