@@ -3,6 +3,7 @@ import pandas as pd
 import sys
 import os
 import re
+import json
 from playwright.async_api import async_playwright
 
 # --- Helper Functions ---
@@ -101,6 +102,9 @@ async def process_offers(input_file):
 
     df = pd.read_csv(input_file)
     print(f"Loaded {len(df)} offers.")
+
+    max_year = 1960
+    print(f"Using max_year: {max_year}")
     
     # Ensure is_hidden column exists
     if "is_hidden" not in df.columns:
@@ -135,9 +139,9 @@ async def process_offers(input_file):
             year = await get_year_built(page, url)
             
             # Logic: 
-            # - If year < 1960: KEEP (is_hidden = False)
+            # - If year < max_year: KEEP (is_hidden = False)
             # - If year not found: KEEP (is_hidden = False)
-            # - If year >= 1960: HIDE (is_hidden = True)
+            # - If year >= max_year: HIDE (is_hidden = True)
             
             status = ""
             
@@ -145,14 +149,14 @@ async def process_offers(input_file):
                 # Keep active
                 row_dict["is_hidden"] = False
                 status = "YEAR NOT FOUND (KEEP)"
-            elif year < 1960:
+            elif year < max_year:
                 row_dict["is_hidden"] = False
-                status = f"YEAR {year} < 1960 (KEEP)"
+                status = f"YEAR {year} < {max_year} (KEEP)"
             else:
                 row_dict["is_hidden"] = True
-                status = f"YEAR {year} >= 1960 (HIDE)"
+                status = f"YEAR {year} >= {max_year} (HIDE)"
             
-            row_dict['scraped_year'] = year if year else ""
+            # row_dict['scraped_year'] = year if year else ""
             
             updated_offers.append(row_dict)
             print(f"[{index+1}/{len(df)}] {status} - {str(row.get('title', 'No Title'))[:30]}...")
