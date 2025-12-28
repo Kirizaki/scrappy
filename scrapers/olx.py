@@ -8,7 +8,7 @@ class OlxScraper(BaseScraper):
         super().__init__("olx", config)
 
     async def scrape(self, page: Page, url: str, max_pages: int = 0) -> list:
-        print(f"Scraping OLX: {url}")
+        self.logger.info(f"Scraping OLX: {url}")
         await page.goto(url, wait_until="domcontentloaded")
         
         # Cookie consent
@@ -24,7 +24,7 @@ class OlxScraper(BaseScraper):
             if max_pages > 0 and current_page > max_pages:
                 break
                 
-            print(f"OLX Page {current_page}")
+            self.logger.info(f"OLX Page {current_page}")
             
             try:
                 await page.wait_for_selector("div[data-cy='l-card']", timeout=5000)

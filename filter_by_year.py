@@ -4,7 +4,13 @@ import sys
 import os
 import re
 import json
+import logging
 from playwright.async_api import async_playwright
+from logger_config import setup_logging
+
+# Setup logging
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # --- Helper Functions ---
 
@@ -18,93 +24,176 @@ def normalize_year(text):
 
 async def extract_year_otodom(page):
     try:
-        # Otodom generic fallback - try to find "Rok budowy"
+        # Otodom often has it in a specific section
+        for selector in ["div[data-cy='ad.top-information.table']", "section[data-cy='ad.parameters.table']"]:
+            el = await page.query_selector(selector)
+            if el:
+                txt = await el.inner_text()
+                m = re.search(r'Rok budowy.*?(\d{4})', txt, re.IGNORECASE | re.DOTALL)
+                if m: return int(m.group(1))
+        
+        # Fallback to full text
         content = await page.content()
-        m = re.search(r'Rok budowy.*?(\d{4})', content)
-        if m:
-            return int(m.group(1))
-            
-        return None
-    except:
-        return None
+        m = re.search(r'Rok budowy.*?(\d{4})', content, re.IGNORECASE)
+        return int(m.group(1)) if m else None
+    except: return None
 
 async def extract_year_olx(page):
     try:
+        # OLX parameters table
+        el = await page.query_selector("table[data-testid='table-param-list']")
+        if el:
+            txt = await el.inner_text()
+            m = re.search(r'Rok budowy[:\s]*(\d{4})', txt, re.IGNORECASE)
+            if m: return int(m.group(1))
+        
         content = await page.content()
         m = re.search(r'Rok budowy[:\s]*(\d{4})', content, re.IGNORECASE)
-        if m:
-            return int(m.group(1))
-        return None
-    except:
-        return None
+        return int(m.group(1)) if m else None
+    except: return None
 
 async def extract_year_trojmiasto(page):
     try:
-        # Investigated selector: .xogField--rok_budowy .xogField__value
+        # Trojmiasto has specific classes
         el = await page.query_selector(".xogField--rok_budowy .xogField__value")
         if el:
             txt = await el.text_content()
-            matches = re.findall(r'\d{4}', txt)
-            if matches: return int(matches[0])
+            m = re.search(r'\d{4}', txt)
+            if m: return int(m.group(0))
             
-        # Fallback to text search if specific field missing
         content = await page.content()
         m = re.search(r'Rok budowy.*?(\d{4})', content, re.IGNORECASE)
-        if m:
-            return int(m.group(1))
-        return None
-    except:
-        return None
+        return int(m.group(1)) if m else None
+    except: return None
         
 async def extract_year_morizon(page):
     try:
+        # Morizon specs
+        el = await page.query_selector("section.mz-section-parameters")
+        if el:
+            txt = await el.inner_text()
+            m = re.search(r'Rok budowy[:\s]*(\d{4})', txt, re.IGNORECASE)
+            if m: return int(m.group(1))
+            
         content = await page.content()
         m = re.search(r'Rok budowy.*?(\d{4})', content, re.IGNORECASE)
-        if m:
-            return int(m.group(1))
+        return int(m.group(1)) if m else None
+    except: return None
+
+async def extract_year_nieruchomosci_online(page):
+    try:
+        # Nieruchomosci-online params
+        el = await page.query_selector(".params-list")
+        if el:
+            txt = await el.inner_text()
+            m = re.search(r'Rok budowy.*?(\d{4})', txt, re.IGNORECASE)
+            if m: return int(m.group(1))
+            
+        content = await page.content()
+        m = re.search(r'Rok budowy.*?(\d{4})', content, re.IGNORECASE)
+        return int(m.group(1)) if m else None
+    except: return None
+
+async def extract_year_gratka(page):
+    try:
+        # Gratka parameters
+        el = await page.query_selector(".parameters__container")
+        if el:
+            txt = await el.inner_text()
+            m = re.search(r'Rok budowy[:\s]*(\d{4})', txt, re.IGNORECASE)
+            if m: return int(m.group(1))
+            
+        content = await page.content()
+        m = re.search(r'Rok budowy.*?(\d{4})', content, re.IGNORECASE)
+        return int(m.group(1)) if m else None
+    except: return None
+
+async def extract_year_tabelaofert(page):
+    try:
+        # Tabelaofert often has it in details or investment info
+        content = await page.content()
+        # Look for words like "oddania", "ukończenia", "rok", "budowy"
+        m = re.search(r'(?:Rok budowy|Termin oddania|Data ukończenia).*?(\d{4})', content, re.IGNORECASE)
+        if m: return int(m.group(1))
+        
+        # Just look for any 4-digit number that looks like a year in specific sections
+        el = await page.query_selector('div[class*="Szczegoly-module"]')
+        if el:
+             txt = await el.inner_text()
+             m = re.search(r'\b(19\d{2}|20[0-2]\d)\b', txt)
+             if m: return int(m.group(1))
+             
         return None
-    except:
-        return None
+    except: return None
 
 async def get_year_built(page, url):
     try:
-        print(f"Checking: {url}")
-        await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+        logger.info(f"Checking: {url}")
         
-        # Cookie consent might be needed
+        # Use a more aggressive timeout for slow sites, but allow for early exit
         try:
-            await page.click("button[id*='accept-btn']", timeout=1000)
+            await page.goto(url, wait_until="domcontentloaded", timeout=20000)
+        except Exception as e:
+            logger.warning(f"Timeout or error loading {url}: {e}")
+            # Try to continue if we have some content
+        
+        # Cookie consent handling - try a few common patterns
+        try:
+            for selector in ["button#onetrust-accept-btn-handler", "button[id*='accept']", "button:has-text('OK')", "button:has-text('Zgadzam')"]:
+                if await page.query_selector(selector):
+                    await page.click(selector, timeout=2000)
+                    break
         except: pass
 
-        if "otodom" in url:
+        if "otodom.pl" in url:
             y = await extract_year_otodom(page)
-        elif "olx" in url:
+        elif "olx.pl" in url:
             y = await extract_year_olx(page)
-        elif "trojmiasto" in url:
+        elif "trojmiasto.pl" in url:
             y = await extract_year_trojmiasto(page)
-        elif "morizon" in url:
+        elif "morizon.pl" in url:
             y = await extract_year_morizon(page)
+        elif "nieruchomosci-online.pl" in url:
+            y = await extract_year_nieruchomosci_online(page)
+        elif "gratka.pl" in url:
+            y = await extract_year_gratka(page)
+        elif "tabelaofert.pl" in url:
+            y = await extract_year_tabelaofert(page)
         else:
-            # Generic fallback
+            # Generic fallback for domiporta, adresowo, szybko, gethome, okolica
             content = await page.content()
-            m = re.search(r'(?:Rok budowy|Building Year).*?(\d{4})', content, re.IGNORECASE)
+            # Try specific keyword first
+            m = re.search(r'(?:Rok budowy|Building Year|Wiek budynku|Oddanie).*?(\d{4})', content, re.IGNORECASE)
+            if not m:
+                # Look for year in a technical parameters section if it exists
+                # Many sites use <ul> or <table> for this
+                params = await page.query_selector_all("ul, table, div[class*='param'], div[class*='spec']")
+                for p in params:
+                    txt = await p.inner_text()
+                    if len(txt) < 1000: # Don't search huge blocks
+                        m2 = re.search(r'\b(19\d{2}|20[0-2]\d)\b', txt)
+                        if m2: 
+                            y_temp = int(m2.group(1))
+                            if 1800 < y_temp < 2030:
+                                return y_temp
+            
             y = int(m.group(1)) if m else None
             
         return y
     except Exception as e:
-        print(f"Error checking {url}: {e}")
+        logger.error(f"Error checking {url}: {e}")
         return None
 
 async def process_offers(input_file):
     if not os.path.exists(input_file):
-        print(f"File {input_file} not found")
+        logger.error(f"File {input_file} not found")
         return
 
     df = pd.read_csv(input_file)
-    print(f"Loaded {len(df)} offers.")
+    logger.info(f"Loaded {len(df)} offers.")
 
     max_year = 1960
-    print(f"Using max_year: {max_year}")
+    logger.info(f"Using max_year: {max_year}")
     
     # Ensure is_hidden column exists
     if "is_hidden" not in df.columns:
@@ -130,7 +219,7 @@ async def process_offers(input_file):
                 is_already_hidden = True
 
             if is_already_hidden:
-                print(f"[{index+1}/{len(df)}] ALREADY HIDDEN (SKIP) - {str(row.get('title', 'No Title'))[:30]}...")
+                logger.info(f"[{index+1}/{len(df)}] ALREADY HIDDEN (SKIP) - {str(row.get('title', 'No Title'))[:30]}...")
                 row_dict["is_hidden"] = True
                 updated_offers.append(row_dict)
                 continue
@@ -159,17 +248,22 @@ async def process_offers(input_file):
             # row_dict['scraped_year'] = year if year else ""
             
             updated_offers.append(row_dict)
-            print(f"[{index+1}/{len(df)}] {status} - {str(row.get('title', 'No Title'))[:30]}...")
+            logger.info(f"[{index+1}/{len(df)}] {status} - {str(row.get('title', 'No Title'))[:30]}...")
+            
+            # Periodic save
+            if (index + 1) % 10 == 0:
+                temp_df = pd.DataFrame(updated_offers)
+                output_file = f"processed_{os.path.basename(input_file)}"
+                temp_df.to_csv(output_file, index=False)
+                logger.info(f"Saved progress to {output_file}")
             
         await browser.close()
         
-    # Save
+    # Final Save
     new_df = pd.DataFrame(updated_offers)
     output_file = f"processed_{os.path.basename(input_file)}"
-    
-    # Ensure columns order if possible, keeping original columns plus is_hidden update
     new_df.to_csv(output_file, index=False)
-    print(f"\nDone! Saved {len(new_df)} offers to {output_file}")
+    logger.info(f"\nDone! Saved {len(new_df)} offers to {output_file}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

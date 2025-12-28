@@ -8,7 +8,7 @@ class MorizonScraper(BaseScraper):
         super().__init__("morizon", config)
 
     async def scrape(self, page: Page, url: str, max_pages: int = 0) -> list:
-        print(f"Scraping Morizon: {url}")
+        self.logger.info(f"Scraping Morizon: {url}")
         await page.goto(url, wait_until="domcontentloaded")
         
         try: await page.click("button#onetrust-accept-btn-handler", timeout=3000)
@@ -21,7 +21,7 @@ class MorizonScraper(BaseScraper):
             if max_pages > 0 and current_page > max_pages:
                 break
                 
-            print(f"Morizon Page {current_page}")
+            self.logger.info(f"Morizon Page {current_page}")
             # Wait for dynamic content
             await asyncio.sleep(2)
 

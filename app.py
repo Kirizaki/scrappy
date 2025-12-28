@@ -5,9 +5,15 @@ from fastapi.templating import Jinja2Templates
 import pandas as pd
 import asyncio
 import json
+import logging
 from storage import load_offers, update_offer_status, CSV_FILE
 from scraper import run_scraper
 from ignore_this import check_password
+from logger_config import setup_logging
+
+# Setup logging
+setup_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -182,7 +188,7 @@ async def run_scraper_wrapper():
     try:
         await run_scraper(progress_callback=update_progress)
     except Exception as e:
-        print(f"Scraper error: {e}")
+        logger.error(f"Scraper error: {e}")
     finally:
         scraper_running = False
         scraper_progress["status"] = "idle"

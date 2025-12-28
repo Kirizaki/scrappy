@@ -8,7 +8,7 @@ class TrojmiastoScraper(BaseScraper):
         super().__init__("trojmiasto", config)
 
     async def scrape(self, page: Page, url: str, max_pages: int = 0) -> list:
-        print(f"Scraping Trojmiasto: {url}")
+        self.logger.info(f"Scraping Trojmiasto: {url}")
         await page.goto(url, wait_until="domcontentloaded")
         try: 
             await page.click("button[id*='gdpr-confirm']", timeout=3000)
@@ -23,7 +23,7 @@ class TrojmiastoScraper(BaseScraper):
             if max_pages > 0 and current_page > max_pages:
                 break
                 
-            print(f"Trojmiasto Page {current_page}")
+            self.logger.info(f"Trojmiasto Page {current_page}")
             
             listing = await page.query_selector_all("div.ogl-item")
             if not listing:

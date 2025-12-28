@@ -32,6 +32,41 @@
             "base_url": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/",
             "enabled": true,
             "max_pages": 0
+        },
+        "nieruchomosci_online": {
+            "base_url": "https://gdansk.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk:7183",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "gratka": {
+            "base_url": "https://gratka.pl/nieruchomosci/mieszkania/gdansk",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "domiporta": {
+            "base_url": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "adresowo": {
+            "base_url": "https://adresowo.pl/mieszkania/gdansk/",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "szybko": {
+            "base_url": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "gethome": {
+            "base_url": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/",
+            "enabled": true,
+            "max_pages": 0
+        },
+        "okolica": {
+            "base_url": "https://www.okolica.pl/search/",
+            "enabled": true,
+            "max_pages": 50
         }
     }
 }

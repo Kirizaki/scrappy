@@ -1,6 +1,11 @@
 import pandas as pd
 import os
+import logging
 from datetime import datetime
+from logger_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 CSV_FILE = "offers.csv"
 COLUMNS = ["no", "url", "title", "price", "area", "price_per_m2", "location", "floor", "garden", "source", "scraped_at", "is_favorite", "is_hidden"]
@@ -18,7 +23,7 @@ def load_offers():
                     df[col] = False
         return df
     except Exception as e:
-        print(f"Error loading CSV: {e}")
+        logger.error(f"Error loading CSV: {e}")
         return pd.DataFrame(columns=COLUMNS)
 
 def save_offers(new_offers: list[dict]):
@@ -29,7 +34,7 @@ def save_offers(new_offers: list[dict]):
     existing_df = load_offers()
     
     if not new_offers:
-        print("No new offers to save.")
+        logger.info("No new offers to save.")
         return
 
     new_df = pd.DataFrame(new_offers)
@@ -97,7 +102,7 @@ def save_offers(new_offers: list[dict]):
     
     final_df = final_df[COLUMNS] # Reorder
     final_df.to_csv(CSV_FILE, index=False)
-    print(f"Saved {len(final_df)} offers to {CSV_FILE}")
+    logger.info(f"Saved {len(final_df)} offers to {CSV_FILE}")
 
 def update_offer_status(url: str, field: str, value: bool):
     df = load_offers()

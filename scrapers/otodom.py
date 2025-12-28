@@ -8,7 +8,7 @@ class OtodomScraper(BaseScraper):
         super().__init__("otodom", config)
 
     async def scrape(self, page: Page, url: str, max_pages: int = 0) -> list:
-        print(f"Scraping Otodom: {url}")
+        self.logger.info(f"Scraping Otodom: {url}")
         await page.goto(url, wait_until="domcontentloaded")
         
         try:
@@ -23,7 +23,7 @@ class OtodomScraper(BaseScraper):
             if max_pages > 0 and current_page > max_pages:
                 break
                 
-            print(f"Otodom Page {current_page}")
+            self.logger.info(f"Otodom Page {current_page}")
             # Dynamic content, wait a bit
             await asyncio.sleep(2) 
         
@@ -33,7 +33,7 @@ class OtodomScraper(BaseScraper):
                  break
     
             results = await page.query_selector_all("article")
-            print(f"Found {len(results)} articles on Otodom Page {current_page}")
+            self.logger.info(f"Found {len(results)} articles on Otodom Page {current_page}")
             page_offers = []
             
             for card in results:

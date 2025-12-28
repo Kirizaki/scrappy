@@ -1,4 +1,5 @@
 import re
+import logging
 from playwright.async_api import Page
 from abc import ABC, abstractmethod
 
@@ -6,6 +7,7 @@ class BaseScraper(ABC):
     def __init__(self, portal_name: str, config: dict):
         self.portal_name = portal_name
         self.config = config
+        self.logger = logging.getLogger(f"scraper.{portal_name}")
         
     @abstractmethod
     async def scrape(self, page: Page, url: str, max_pages: int = 0) -> list:
