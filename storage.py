@@ -8,7 +8,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 CSV_FILE = "offers.csv"
-COLUMNS = ["no", "url", "title", "price", "area", "price_per_m2", "location", "floor", "garden", "source", "scraped_at", "is_favorite", "is_hidden"]
+COLUMNS = ["no", "url", "title", "price", "area", "price_per_m2", "location", "floor", "garden", "source", "scraped_at", "is_favorite", "is_hidden", "analysis_status", "analysis_summary"]
 
 def load_offers():
     if not os.path.exists(CSV_FILE):
@@ -21,6 +21,10 @@ def load_offers():
                 df[col] = None
                 if col in ["is_favorite", "is_hidden"]:
                     df[col] = False
+                if col == "analysis_status":
+                    df[col] = "none"
+                if col == "analysis_summary":
+                    df[col] = None
         return df
     except Exception as e:
         logger.error(f"Error loading CSV: {e}")
@@ -46,6 +50,10 @@ def save_offers(new_offers: list[dict]):
         new_df["is_favorite"] = False
     if "is_hidden" not in new_df.columns:
         new_df["is_hidden"] = False
+    if "analysis_status" not in new_df.columns:
+        new_df["analysis_status"] = "none"
+    if "analysis_summary" not in new_df.columns:
+        new_df["analysis_summary"] = None
         
     # Ensure all columns are present in new_df
     for col in COLUMNS:
@@ -68,6 +76,8 @@ def save_offers(new_offers: list[dict]):
             existing_row = existing_dict[url]
             row["is_favorite"] = existing_row.get("is_favorite", False)
             row["is_hidden"] = existing_row.get("is_hidden", False)
+            row["analysis_status"] = existing_row.get("analysis_status", "none")
+            row["analysis_summary"] = existing_row.get("analysis_summary", None)
             # Maybe keep original scraped_at? Or update it? Let's update it to show it's still active.
             # But user might want to know when it was FIRST found. Let's keep original scraped_at.
             row["scraped_at"] = existing_row.get("scraped_at", row["scraped_at"])

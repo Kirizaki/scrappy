@@ -1,7 +1,7 @@
 {
     "filters": {
         "min_area": 60,
-        "max_price": null,
+        "max_price": 1300000,
         "district": [
             "Wrzeszcz",
             "Wrzeszcz G\u00f3rny",

@@ -165,6 +165,26 @@
             cursor: pointer;
         }
 
+        .analysis-status-pending {
+            color: var(--secondary-color);
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+
         .offer-link {
             color: var(--primary-color);
             text-decoration: none;
@@ -453,6 +473,7 @@
                                 <th class="text-center">Floor</th>
                                 <th class="text-center">Garden</th>
                                 <th>Scraped Date</th>
+                                <th class="text-center">Analysis</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -555,6 +576,59 @@
                     <div class="modal-footer bg-light">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-primary px-4" id="saveConfigBtn">Save & Apply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Input Modal -->
+        <div class="modal fade" id="analysisInputModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="bi bi-robot me-2"></i>Analyze Offer</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="analyzeMainUrl">
+                        <p class="small text-muted mb-3">Add additional URLs (e.g. from other portals or neighbor
+                            offers) to provide more context for the analysis.</p>
+                        <div id="additionalUrlsContainer">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control additional-url" placeholder="https://...">
+                                <button class="btn btn-outline-danger remove-url-btn" type="button"><i
+                                        class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary w-100 mt-2" id="addUrlBtn">
+                            <i class="bi bi-plus-lg me-1"></i>Add Another URL
+                        </button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="confirmAnalyzeBtn">Start Analyzing</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Result Modal -->
+        <div class="modal fade" id="analysisResultModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title"><i class="bi bi-robot me-2"></i>Analysis Summary</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4" id="analysisResultBody">
+                        <!-- Content will be injected here -->
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <input type="hidden" id="resetAnalysisUrl">
+                        <button type="button" class="btn btn-outline-danger" id="resetAnalysisBtn">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset & Re-analyze
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -684,12 +758,26 @@
                             className: 'text-muted small text-center align-middle'
                         },
                         {
+                            data: 'analysis_status',
+                            render: function (data, type, row) {
+                                if (data === 'done') {
+                                    return '<button class="btn btn-outline-success btn-sm show-analysis rounded-pill" title="Show Analysis"><i class="bi bi-robot me-1"></i>Summary</button>';
+                                } else if (data === 'pending') {
+                                    return '<div class="analysis-status-pending small fw-bold"><i class="bi bi-clock-history me-1"></i>Analyzing...</div>';
+                                } else {
+                                    return '<button class="btn btn-outline-primary btn-sm start-analysis rounded-pill" title="Start Analysis"><i class="bi bi-robot me-1"></i>Analyze</button>';
+                                }
+                            },
+                            className: 'text-center align-middle',
+                            width: "120px"
+                        },
+                        {
                             data: null,
                             render: function (data, type, row) {
                                 return '<button class="btn btn-outline-danger btn-sm hide-offer rounded-circle" title="Hide Offer"><i class="bi bi-eye-slash-fill"></i></button>';
                             },
                             className: 'text-center align-middle',
-                            width: "80px"
+                            width: "60px"
                         }
                     ],
                     order: [[2, 'asc']],
@@ -790,6 +878,109 @@
                         wrap.append(card);
                     });
                 }
+
+                // Analysis Logic
+                $('#offersTable tbody').on('click', '.start-analysis', function () {
+                    var row = table.row($(this).closest('tr')).data();
+                    $('#analyzeMainUrl').val(row.url);
+                    $('#additionalUrlsContainer').html(`
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control additional-url" placeholder="https://...">
+                            <button class="btn btn-outline-danger remove-url-btn" type="button"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `);
+                    var modal = new bootstrap.Modal(document.getElementById('analysisInputModal'));
+                    modal.show();
+                });
+
+                $('#addUrlBtn').click(function () {
+                    $('#additionalUrlsContainer').append(`
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control additional-url" placeholder="https://...">
+                            <button class="btn btn-outline-danger remove-url-btn" type="button"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `);
+                });
+
+                $(document).on('click', '.remove-url-btn', function () {
+                    if ($('#additionalUrlsContainer .input-group').length > 1) {
+                        $(this).closest('.input-group').remove();
+                    }
+                });
+
+                $('#confirmAnalyzeBtn').click(function () {
+                    var mainUrl = $('#analyzeMainUrl').val();
+                    var additionalUrls = [];
+                    $('.additional-url').each(function () {
+                        var val = $(this).val().trim();
+                        if (val) additionalUrls.push(val);
+                    });
+
+                    $.ajax({
+                        url: '/api/offers/analyze',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ url: mainUrl, additional_urls: additionalUrls }),
+                        success: function () {
+                            bootstrap.Modal.getInstance(document.getElementById('analysisInputModal')).hide();
+                            table.ajax.reload(null, false);
+                            startPollingAnalysis(mainUrl);
+                        }
+                    });
+                });
+
+                $('#offersTable tbody').on('click', '.show-analysis', function () {
+                    var row = table.row($(this).closest('tr')).data();
+                    $('#analysisResultBody').html(row.analysis_summary || 'No summary available.');
+                    $('#resetAnalysisUrl').val(row.url);
+                    var modal = new bootstrap.Modal(document.getElementById('analysisResultModal'));
+                    modal.show();
+                });
+
+                $('#resetAnalysisBtn').click(function () {
+                    var url = $('#resetAnalysisUrl').val();
+                    if (confirm("This will delete the current summary and allow you to re-analyze. Continue?")) {
+                        $.ajax({
+                            url: '/api/offers/analysis/reset',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ url: url }),
+                            success: function () {
+                                bootstrap.Modal.getInstance(document.getElementById('analysisResultModal')).hide();
+                                table.ajax.reload(null, false);
+                            }
+                        });
+                    }
+                });
+
+                function startPollingAnalysis(url) {
+                    var interval = setInterval(function () {
+                        $.get('/api/offers/analysis?url=' + encodeURIComponent(url), function (data) {
+                            if (data.status === 'done') {
+                                clearInterval(interval);
+                                table.ajax.reload(null, false);
+                            } else if (data.status === 'none') {
+                                // Error case
+                                clearInterval(interval);
+                                table.ajax.reload(null, false);
+                            }
+                        });
+                    }, 3000);
+                }
+
+                // Initial poll for any pending analyses
+                function checkPendingAnalyses() {
+                    var data = table.rows().data().toArray();
+                    data.forEach(function (row) {
+                        if (row.analysis_status === 'pending') {
+                            startPollingAnalysis(row.url);
+                        }
+                    });
+                }
+
+                table.on('xhr', function () {
+                    setTimeout(checkPendingAnalyses, 500);
+                });
 
                 function formatDate(dateStr) {
                     if (!dateStr) return '-';

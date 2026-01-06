@@ -6,10 +6,13 @@ import pandas as pd
 import asyncio
 import json
 import logging
+import numpy as np
+import base64
 from storage import load_offers, update_offer_status, CSV_FILE
 from scraper import run_scraper
 from ignore_this import check_password
 from logger_config import setup_logging
+from analize import run_analysis_and_update
 
 # Setup logging
 setup_logging()
@@ -65,8 +68,18 @@ async def get_offers(request: Request):
          df = df.sort_values(by="scraped_at", ascending=False)
     
     # Handle NaNs and Infs for JSON
-    import numpy as np
     df = df.replace([np.inf, -np.inf, np.nan], None)
+    
+    # Decode Base64 summaries for the frontend display
+    if "analysis_summary" in df.columns:
+        def safe_decode(val):
+            if val and isinstance(val, str) and not val.startswith("<div"):
+                try:
+                    return base64.b64decode(val).decode('utf-8')
+                except:
+                    return val
+            return val
+        df["analysis_summary"] = df["analysis_summary"].apply(safe_decode)
          
     return df.to_dict(orient="records")
 
@@ -95,6 +108,59 @@ async def toggle_hidden(request: Request, payload: dict):
     success = update_offer_status(url, "is_hidden", True)
     if not success:
         raise HTTPException(status_code=404, detail="Offer not found")
+    return {"status": "success"}
+
+@app.post("/api/offers/analyze")
+async def start_analysis(request: Request, background_tasks: BackgroundTasks):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    payload = await request.json()
+    url = payload.get("url")
+    additional_urls = payload.get("additional_urls", [])
+    
+    if not url:
+        raise HTTPException(status_code=400, detail="URL required")
+    
+    # We don't check if it's already running here, analize.py will handle status updates.
+    background_tasks.add_task(run_analysis_and_update, url, additional_urls)
+    return {"status": "Analysis started"}
+
+@app.get("/api/offers/analysis")
+async def get_analysis(url: str):
+    df = load_offers()
+    if url in df["url"].values:
+        # Handle NaNs for JSON
+        df = df.replace([np.inf, -np.inf, np.nan], None)
+        
+        row = df[df["url"] == url].iloc[0]
+        status = row.get("analysis_status", "none")
+        summary = row.get("analysis_summary", None)
+        
+        # Decode Base64 if it's done
+        if status == "done" and summary:
+            try:
+                summary = base64.b64decode(summary).decode('utf-8')
+            except Exception as e:
+                logger.error(f"Failed to decode analysis summary for {url}: {e}")
+                # Keep original if it's already plain HTML (for migration transition)
+        
+        return {
+            "status": status,
+            "summary": summary
+        }
+    raise HTTPException(status_code=404, detail="Offer not found")
+
+@app.post("/api/offers/analysis/reset")
+async def reset_analysis(request: Request):
+    if not is_authenticated(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    payload = await request.json()
+    url = payload.get("url")
+    if not url:
+        raise HTTPException(status_code=400, detail="URL required")
+    
+    update_offer_status(url, "analysis_status", "none")
+    update_offer_status(url, "analysis_summary", None)
     return {"status": "success"}
 
 
