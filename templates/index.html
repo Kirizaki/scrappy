@@ -127,7 +127,6 @@
             border: none;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
         }
 
         thead {
@@ -139,6 +138,58 @@
             border-bottom: none;
             font-weight: 700;
             padding: 15px;
+            position: relative;
+        }
+
+        .price-header {
+            position: relative !important;
+            padding-right: 35px !important;
+            /* Space for DT sort icons */
+            cursor: pointer;
+        }
+
+        .price-header-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .price-filter-icon {
+            cursor: pointer;
+            color: rgba(0, 0, 0, 0.4);
+            /* Dark color for better contrast on white */
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .price-filter-icon:hover {
+            color: var(--primary-color);
+            transform: scale(1.2);
+        }
+
+        .price-filter-icon.active {
+            color: var(--secondary-color) !important;
+        }
+
+        .price-filter-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            z-index: 1000;
+            width: 220px;
+            display: none;
+            color: var(--text-dark);
+            text-align: left;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+
+        .price-filter-dropdown.show {
+            display: block;
         }
 
         table.table-striped>tbody>tr:nth-of-type(odd)>* {
@@ -448,7 +499,30 @@
                                 <th class="text-center"><i class="bi bi-heart-fill"></i></th>
                                 <th>Title</th>
                                 <th>Area (m²)</th>
-                                <th>Price</th>
+                                <th class="price-header">
+                                    <div class="price-header-content">
+                                        <span>Price</span>
+                                        <i class="bi bi-funnel-fill price-filter-icon" id="priceFilterBtn"></i>
+                                    </div>
+                                    <div class="price-filter-dropdown" id="priceFilterDropdown">
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1">Min Price (PLN)</label>
+                                            <input type="number" class="form-control form-control-sm" id="priceMin"
+                                                placeholder="0">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small mb-1">Max Price (PLN)</label>
+                                            <input type="number" class="form-control form-control-sm" id="priceMax"
+                                                placeholder="No limit">
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-primary btn-sm flex-grow-1"
+                                                id="applyPriceFilter">Apply</button>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                id="clearPriceFilter">Reset</button>
+                                        </div>
+                                    </div>
+                                </th>
                                 <th>Price/m²</th>
                                 <th class="text-center">Floor</th>
                                 <th class="text-center">Garden</th>
@@ -568,6 +642,29 @@
 
         <script>
             $(document).ready(function () {
+                // Custom Filtering Logic for Price
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var min = parseInt($('#priceMin').val(), 10);
+                        var max = parseInt($('#priceMax').val(), 10);
+
+                        // Use window.offersDataTable to avoid reference error before initialization
+                        if (typeof window.offersDataTable === 'undefined') return true;
+
+                        var rowData = window.offersDataTable.row(dataIndex).data();
+                        var price = rowData.price;
+
+                        if (typeof price !== 'number') return true; // Skip if not a number or missing
+
+                        if (isNaN(min) && isNaN(max)) return true;
+                        if (isNaN(min) && price <= max) return true;
+                        if (isNaN(max) && price >= min) return true;
+                        if (price >= min && price <= max) return true;
+
+                        return false;
+                    }
+                );
+
                 var table = $('#offersTable').DataTable({
                     ajax: {
                         url: '/api/offers',
@@ -706,6 +803,46 @@
                             $(row).addClass('offer-selected');
                         }
                     }
+                });
+                window.offersDataTable = table;
+
+                // Price Filter UI Logic
+                $(document).on('click', '#priceFilterBtn', function (e) {
+                    e.stopPropagation(); // Prevent sorting
+                    $('#priceFilterDropdown').toggleClass('show');
+                });
+
+                // Close dropdown when clicking outside
+                $(document).on('click', function (e) {
+                    if (!$(e.target).closest('.price-header').length) {
+                        $('#priceFilterDropdown').removeClass('show');
+                    }
+                });
+
+                $(document).on('click', '#priceFilterDropdown', function (e) {
+                    e.stopPropagation(); // Prevent dropdown from closing when clicking inside
+                });
+
+                $(document).on('click', '#applyPriceFilter', function () {
+                    var min = $('#priceMin').val();
+                    var max = $('#priceMax').val();
+
+                    if (min || max) {
+                        $('#priceFilterBtn').addClass('active');
+                    } else {
+                        $('#priceFilterBtn').removeClass('active');
+                    }
+
+                    table.draw();
+                    $('#priceFilterDropdown').removeClass('show');
+                });
+
+                $(document).on('click', '#clearPriceFilter', function () {
+                    $('#priceMin').val('');
+                    $('#priceMax').val('');
+                    $('#priceFilterBtn').removeClass('active');
+                    table.draw();
+                    $('#priceFilterDropdown').removeClass('show');
                 });
 
                 // Selected Offer Logic
