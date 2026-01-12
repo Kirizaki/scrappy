@@ -1,13 +1,17 @@
 {
     "filters": {
-        "min_area": 60,
-        "max_price": null,
+        "min_area": 40,
+        "max_price": 600000,
         "district": [
             "Wrzeszcz",
             "Wrzeszcz G\u00f3rny",
             "Wrzeszcz Dolny",
             "Anio\u0142ki",
-            "Strzy\u017ca"
+            "Strzy\u017ca",
+            "Oliwa",
+            "Zaspa",
+            "Przymorze",
+            "\u017babianka"
         ],
         "ground_floor": false,
         "garden": false
