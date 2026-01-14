@@ -45,7 +45,18 @@ TROJMIASTO_DISTRICT_MAP = {
     "wrzeszcz górny": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/wrzeszcz/",
     "wrzeszcz dolny": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/wrzeszcz-dolny/",
     "strzyża": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/strzyza/",
-    "aniołki": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/aniolki/"
+    "aniołki": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/aniolki/",
+    "oliwa": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/oliwa/",
+    "zaspa": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/zaspa/",
+    "przymorze": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/przymorze-wielkie/",
+    "żabianka": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/zabianka/",
+    "zaspa-młyniec": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/zaspa/",
+    "zaspa-rozstaje": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/zaspa/",
+    "wyspa sobieszewska": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/wyspa-sobieszewska/",
+    "tysiąclecia": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/zabianka/",
+    "śródmieście": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/srodmiescie/",
+    "jelitkowo": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/jelitkowo/",
+    "brzeźno": "https://ogloszenia.trojmiasto.pl/nieruchomosci-sprzedam-rynek-wtorny/mieszkanie/gdansk/brzezno/"
 }
 
 NIERUCHOMOSCI_ONLINE_DISTRICT_MAP = {
@@ -53,7 +64,18 @@ NIERUCHOMOSCI_ONLINE_DISTRICT_MAP = {
     "wrzeszcz górny": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Wrzeszcz",
     "wrzeszcz dolny": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Wrzeszcz",
     "strzyża": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Strzy%C5%BCa",
-    "aniołki": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Anio%C5%82ki"
+    "aniołki": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Anio%C5%82ki",
+    "oliwa": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Oliwa",
+    "zaspa": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Zaspa",
+    "przymorze": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Przymorze",
+    "żabianka": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+%C5%BBabianka",
+    "zaspa-młyniec": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Zaspa-M%C5%82yniec",
+    "zaspa-rozstaje": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Zaspa-Rozstaje",
+    "wyspa sobieszewska": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Wyspa+Sobieszewska",
+    "tysiąclecia": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Tysi%C4%85clecia",
+    "śródmieście": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+%C5%9Ar%C3%B3dmie%C5%9Bcie",
+    "jelitkowo": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Jelitkowo",
+    "brzeźno": "https://www.nieruchomosci-online.pl/szukaj.html?3,mieszkanie,sprzedaz,,Gda%C5%84sk+Brze%C5%BAno"
 }
 
 GRATKA_DISTRICT_MAP = {
@@ -61,7 +83,18 @@ GRATKA_DISTRICT_MAP = {
     "wrzeszcz górny": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/wrzeszcz",
     "wrzeszcz dolny": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/wrzeszcz",
     "strzyża": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/strzyza",
-    "aniołki": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/aniolki"
+    "aniołki": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/aniolki",
+    "oliwa": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/oliwa",
+    "zaspa": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/zaspa",
+    "przymorze": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/przymorze",
+    "żabianka": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/zabianka",
+    "zaspa-młyniec": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/zaspa-mlyniec",
+    "zaspa-rozstaje": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/zaspa-rozstaje",
+    "wyspa sobieszewska": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/wyspa-sobieszewska",
+    "tysiąclecia": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/zabianka",
+    "śródmieście": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/srodmiescie",
+    "jelitkowo": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/jelitkowo",
+    "brzeźno": "https://gratka.pl/nieruchomosci/mieszkania/gdansk/brzezno"
 }
 
 DOMIPORTA_DISTRICT_MAP = {
@@ -69,7 +102,18 @@ DOMIPORTA_DISTRICT_MAP = {
     "wrzeszcz górny": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/wrzeszcz",
     "wrzeszcz dolny": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/wrzeszcz-dolny",
     "strzyża": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/strzyza",
-    "aniołki": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/aniolki"
+    "aniołki": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/aniolki",
+    "oliwa": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/oliwa",
+    "zaspa": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/zaspa",
+    "przymorze": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/przymorze",
+    "żabianka": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/zabianka",
+    "zaspa-młyniec": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/zaspa-mlyniec",
+    "zaspa-rozstaje": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/zaspa-rozstaje",
+    "wyspa sobieszewska": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/sobieszewo",
+    "tysiąclecia": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/przymorze",
+    "śródmieście": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/srodmiescie",
+    "jelitkowo": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/jelitkowo",
+    "brzeźno": "https://www.domiporta.pl/mieszkanie/sprzedam/pomorskie/gdansk/brzezno"
 }
 
 ADRESOWO_DISTRICT_MAP = {
@@ -78,7 +122,18 @@ ADRESOWO_DISTRICT_MAP = {
     "wrzeszcz górny": "https://adresowo.pl/mieszkania/gdansk/wrzeszcz-gorny/", # Guessing slug
     "wrzeszcz dolny": "https://adresowo.pl/mieszkania/gdansk/wrzeszcz-dolny/", # Guessing slug
     "strzyża": "https://adresowo.pl/mieszkania/gdansk/strzyza/",
-    "aniołki": "https://adresowo.pl/mieszkania/gdansk/aniolki/"
+    "aniołki": "https://adresowo.pl/mieszkania/gdansk/aniolki/",
+    "oliwa": "https://adresowo.pl/mieszkania/gdansk-oliwa",
+    "zaspa": "https://adresowo.pl/mieszkania/gdansk-zaspa",
+    "przymorze": "https://adresowo.pl/mieszkania/gdansk-przymorze",
+    "żabianka": "https://adresowo.pl/mieszkania/gdansk-zabianka",
+    "zaspa-młyniec": "https://adresowo.pl/mieszkania/gdansk-zaspa",
+    "zaspa-rozstaje": "https://adresowo.pl/mieszkania/gdansk-zaspa",
+    "wyspa sobieszewska": "https://adresowo.pl/mieszkania/gdansk-wyspa-sobieszewska",
+    "tysiąclecia": "https://adresowo.pl/mieszkania/gdansk-ul-tysiaclecia",
+    "śródmieście": "https://adresowo.pl/mieszkania/gdansk-srodmiescie",
+    "jelitkowo": "https://adresowo.pl/mieszkania/gdansk-jelitkowo",
+    "brzeźno": "https://adresowo.pl/mieszkania/gdansk-brzezno"
 }
 
 SZYBKO_DISTRICT_MAP = {
@@ -86,7 +141,18 @@ SZYBKO_DISTRICT_MAP = {
     "wrzeszcz górny": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Wrzeszcz",
     "wrzeszcz dolny": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Wrzeszcz",
     "strzyża": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Strzy%C5%BCa",
-    "aniołki": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Anio%C5%82ki"
+    "aniołki": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Anio%C5%82ki",
+    "oliwa": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Oliwa",
+    "zaspa": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Zaspa",
+    "przymorze": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Przymorze",
+    "żabianka": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/%C5%BBabianka",
+    "zaspa-młyniec": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Zaspa-M%C5%82yniec",
+    "zaspa-rozstaje": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Zaspa-Rozstaje",
+    "wyspa sobieszewska": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Wyspa-Sobieszewska",
+    "tysiąclecia": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/%C5%BBabianka",
+    "śródmieście": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/%C5%9Ar%C3%B3dmie%C5%9Bcie",
+    "jelitkowo": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Jelitkowo",
+    "brzeźno": "https://szybko.pl/l/na-sprzedaz/lokal-mieszkalny/Gda%C5%84sk/Brze%C5%BAno"
 }
 
 GETHOME_DISTRICT_MAP = {
@@ -94,7 +160,18 @@ GETHOME_DISTRICT_MAP = {
     "wrzeszcz górny": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/wrzeszcz/",
     "wrzeszcz dolny": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/wrzeszcz/",
     "strzyża": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/strzyza/",
-    "aniołki": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/aniolki/"
+    "aniołki": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/aniolki/",
+    "oliwa": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/oliwa/",
+    "zaspa": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/zaspa/",
+    "przymorze": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/przymorze-wielkie/",
+    "żabianka": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/zabianka-wejhera-jelitkowo-tysiclecia/",
+    "zaspa-młyniec": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/zaspa-mlyniec/",
+    "zaspa-rozstaje": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/zaspa-rozstaje/",
+    "wyspa sobieszewska": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/wyspa-sobieszewska/",
+    "tysiąclecia": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/zabianka-wejhera-jelitkowo-tysiclecia/",
+    "śródmieście": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/srodmiescie/",
+    "jelitkowo": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/zabianka-wejhera-jelitkowo-tysiclecia/",
+    "brzeźno": "https://gethome.pl/mieszkania/na-sprzedaz/gdansk/brzezno/"
 }
 
 # Shared check_filters logic (could be moved to base but useful here for post-filtering)

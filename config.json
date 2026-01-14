@@ -1,9 +1,10 @@
 {
     "filters": {
-        "min_area": 40,
+        "min_area": 30,
         "max_price": 600000,
         "district": [
             "Wrzeszcz",
+            "Wrzeszcz G\u00f3rny",
             "Wrzeszcz G\u00f3rny",
             "Wrzeszcz Dolny",
             "Anio\u0142ki",
@@ -11,7 +12,14 @@
             "Oliwa",
             "Zaspa",
             "Przymorze",
-            "\u017babianka"
+            "\u017babianka",
+            "Zaspa-M\u0142yniec",
+            "Zaspa-Rozstaje",
+            "Wyspa Sobieszewska",
+            "Tysi\u0105clecia",
+            "\u015ar\u00f3dmie\u015bcie",
+            "Jelitkowo",
+            "Brze\u017ano"
         ],
         "ground_floor": false,
         "garden": false
